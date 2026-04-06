@@ -23,8 +23,12 @@ Two regimes:
     | 0                R2+C2·e^{ikx}   0                R1+C1·e^{-ikx} |
     | R1+C1·e^{iky}   0                R2+C2·e^{-iky}   0              |
 
-  Key property: sublattice symmetry ⇒ PBC eigenvalues are real.
-  Gap closes at ω = 0.5 (topological phase transition).
+  Key properties:
+    - Bipartite structure ⇒ eigenvalues come in ±λ pairs (from P² block-diag)
+    - One pair is always purely imaginary (±ib): Re = 0 to machine precision
+    - The other pair can be real (±a) or complex, depending on parameters
+    - Gap ≡ min_k |Re(λ)| of the non-imaginary pair
+    - Gap closes exactly at ω = 0.5 (topological phase transition)
 
 4B — OBC (real space):
   Full (4L²)×(4L²) transition matrix. Eigenvalues become complex.
