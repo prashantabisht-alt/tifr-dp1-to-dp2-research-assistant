@@ -9,13 +9,13 @@ Model rules (Osat, Meyberg, Metson & Speck, arXiv:2602.12020):
   At each discrete time step:
     With prob D_r:  NOISE STEP
       - Walker stays at (x,y)
-      - Director rotates: CCW (d -> d+1 mod 4) with prob ω
-                          CW  (d -> d-1 mod 4) with prob (1-ω)
+      - Director rotates: CCW (d -> d-1 mod 4) with prob ω
+                          CW  (d -> d+1 mod 4) with prob (1-ω)
 
     With prob (1-D_r):  CHIRAL STEP
       - Walker translates one step in direction d
-      - Then director rotates: CW  (d -> d-1 mod 4) with prob ω
-                               CCW (d -> d+1 mod 4) with prob (1-ω)
+      - Then director rotates: CW  (d -> d+1 mod 4) with prob ω
+                               CCW (d -> d-1 mod 4) with prob (1-ω)
       NOTE: rotation chirality in chiral step is OPPOSITE to noise step!
 
       OBC special rule: if translation would move walker off-grid,

@@ -357,20 +357,20 @@ def fig4b_band_structure():
 
 def fig4_obc_complex_plane():
     """
-    Fig 4(c)/(f)/(g): OBC spectrum in the complex plane.
+    Fig 4(f)/(g): OBC spectrum in the complex plane.
     Color by edge-localization weight of each eigenvector.
 
-    Panel layout:
-      Row 1: varying ω at fixed D_r = 0.1 (ω = 0.35, 0.5, 0.65)
-      Row 2: varying D_r at fixed ω = 1.0 (D_r = 0.1, 0.3, 0.5)
+    Panel layout (matches paper Fig 4(f) and 4(g)):
+      Row 1 = Fig 4(g): ω ∈ {0.5, 0.7, 0.9} at fixed D_r = 0.1
+      Row 2 = Fig 4(f): ω = 1.0 at D_r ∈ {0.65, 0.5, 0.35}
     """
     L = 10
 
     fig, axes = plt.subplots(2, 3, figsize=(16, 10))
 
-    # Row 1: varying omega
+    # Row 1 = Fig 4(g): varying omega at fixed D_r
     D_r = 0.1
-    omegas = [0.35, 0.5, 0.65]
+    omegas = [0.5, 0.7, 0.9]
     for col, omega in enumerate(omegas):
         print(f"  OBC spectrum: omega={omega}, D_r={D_r}, L={L}...")
         evals, ew = obc_spectrum(omega, D_r, L)
@@ -390,9 +390,9 @@ def fig4_obc_complex_plane():
     plt.colorbar(sc, ax=axes[0, :].tolist(), shrink=0.6, label='Edge weight',
                  pad=0.02)
 
-    # Row 2: varying D_r
+    # Row 2 = Fig 4(f): varying D_r at fixed omega = 1 (paper's values)
     omega = 1.0
-    D_r_values = [0.1, 0.3, 0.5]
+    D_r_values = [0.65, 0.5, 0.35]
     for col, D_r in enumerate(D_r_values):
         print(f"  OBC spectrum: omega={omega}, D_r={D_r}, L={L}...")
         evals, ew = obc_spectrum(omega, D_r, L)

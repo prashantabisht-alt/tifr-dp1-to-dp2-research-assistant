@@ -7,18 +7,21 @@
 !   At each discrete time step:
 !     With prob D_r:  NOISE STEP
 !       - Walker stays at (x,y)
-!       - Director rotates: CCW (d+1 mod 4) with prob omega
-!                           CW  (d-1 mod 4) with prob (1-omega)
+!       - Director rotates: CCW (d-1 mod 4) with prob omega
+!                           CW  (d+1 mod 4) with prob (1-omega)
 !
 !     With prob (1-D_r):  CHIRAL STEP
 !       - Walker translates one step in direction d
-!       - Director rotates: CW  (d-1 mod 4) with prob omega
-!                           CCW (d+1 mod 4) with prob (1-omega)
+!       - Director rotates: CW  (d+1 mod 4) with prob omega
+!                           CCW (d-1 mod 4) with prob (1-omega)
 !       (rotation chirality OPPOSITE to noise step)
 !
 !       OBC: if translation would leave grid, entire step is blocked.
 !
 !   Direction encoding: d=0:up(y+1), 1:right(x+1), 2:down(y-1), 3:left(x-1)
+!   Convention (matches tcrw_core.py):
+!     With encoding above, (d-1) mod 4 = ↑→←→↓→→→↑ (CCW, angle increases)
+!                          (d+1) mod 4 = ↑→→→↓→←→↑ (CW,  angle decreases)
 !
 ! Outputs PBC: t  MSD(t)
 ! Outputs OBC: visit histogram P(x,y) and current fields J(x,y)
@@ -125,10 +128,11 @@ contains
 
         if (r_step < D_r) then
           ! --- Noise step: stay put, rotate ---
+          ! Convention matches Python: prob omega -> CCW (d-1)
           if (r_rot < omega) then
-            dir = mod(dir + 1, 4)       ! CCW
+            dir = mod(dir + 3, 4)       ! CCW (d-1 mod 4 = d+3 mod 4)
           else
-            dir = mod(dir + 3, 4)       ! CW (d-1 mod 4 = d+3 mod 4)
+            dir = mod(dir + 1, 4)       ! CW  (d+1 mod 4)
           end if
         else
           ! --- Chiral step: translate then rotate ---
@@ -138,11 +142,11 @@ contains
           ux = ux + DX(dir)
           uy = uy + DY(dir)
 
-          ! Rotate (OPPOSITE chirality to noise)
+          ! Rotate OPPOSITE to noise: prob omega -> CW (d+1)
           if (r_rot < omega) then
-            dir = mod(dir + 3, 4)       ! CW
+            dir = mod(dir + 1, 4)       ! CW
           else
-            dir = mod(dir + 1, 4)       ! CCW
+            dir = mod(dir + 3, 4)       ! CCW
           end if
         end if
 
@@ -210,11 +214,11 @@ contains
         r_rot  = grnd()
 
         if (r_step < D_r) then
-          ! --- Noise step ---
+          ! --- Noise step ---  prob omega -> CCW (d-1 = d+3)
           if (r_rot < omega) then
-            dir = mod(dir + 1, 4)
+            dir = mod(dir + 3, 4)       ! CCW
           else
-            dir = mod(dir + 3, 4)
+            dir = mod(dir + 1, 4)       ! CW
           end if
         else
           ! --- Chiral step with OBC ---
@@ -222,15 +226,15 @@ contains
           ny = y + DY(dir)
 
           if (nx >= 0 .and. nx < L .and. ny >= 0 .and. ny < L) then
-            ! Can move: record current, translate, rotate
+            ! Can move: record current, translate, rotate (opposite chirality)
             Jx(x, y) = Jx(x, y) + real(DX(dir), dp)
             Jy(x, y) = Jy(x, y) + real(DY(dir), dp)
             x = nx
             y = ny
             if (r_rot < omega) then
-              dir = mod(dir + 3, 4)
+              dir = mod(dir + 1, 4)     ! CW
             else
-              dir = mod(dir + 1, 4)
+              dir = mod(dir + 3, 4)     ! CCW
             end if
           end if
           ! Blocked: do nothing (no move, no rotation)
@@ -319,20 +323,22 @@ contains
           r_rot  = grnd()
 
           if (r_step < D_r) then
+            ! Noise: prob omega -> CCW (d-1)
             if (r_rot < omega) then
-              dir = mod(dir + 1, 4)
+              dir = mod(dir + 3, 4)     ! CCW
             else
-              dir = mod(dir + 3, 4)
+              dir = mod(dir + 1, 4)     ! CW
             end if
           else
             x  = mod(x + DX(dir) + L, L)
             y  = mod(y + DY(dir) + L, L)
             ux = ux + DX(dir)
             uy = uy + DY(dir)
+            ! Chiral: prob omega -> CW (d+1)
             if (r_rot < omega) then
-              dir = mod(dir + 3, 4)
+              dir = mod(dir + 1, 4)     ! CW
             else
-              dir = mod(dir + 1, 4)
+              dir = mod(dir + 3, 4)     ! CCW
             end if
           end if
 
@@ -400,20 +406,22 @@ contains
       r_rot  = grnd()
 
       if (r_step < D_r) then
+        ! Noise: prob omega -> CCW (d-1)
         if (r_rot < omega) then
-          dir = mod(dir + 1, 4)
+          dir = mod(dir + 3, 4)         ! CCW
         else
-          dir = mod(dir + 3, 4)
+          dir = mod(dir + 1, 4)         ! CW
         end if
       else
         x  = mod(x + DX(dir) + L, L)
         y  = mod(y + DY(dir) + L, L)
         ux = ux + DX(dir)
         uy = uy + DY(dir)
+        ! Chiral: prob omega -> CW (d+1)
         if (r_rot < omega) then
-          dir = mod(dir + 3, 4)
+          dir = mod(dir + 1, 4)         ! CW
         else
-          dir = mod(dir + 1, 4)
+          dir = mod(dir + 3, 4)         ! CCW
         end if
       end if
 

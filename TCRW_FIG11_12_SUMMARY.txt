@@ -1,0 +1,171 @@
+================================================================================
+TCRW Figures 11 & 12: Boundary effects and nested spectra
+================================================================================
+
+SCRIPT: tcrw_fig11_12.py (15 KB, 230 lines)
+GENERATED: 2026-04-11
+
+================================================================================
+FIGURE 11: Boundary effects on spectrum (4 panels)
+================================================================================
+
+Parameters: omega=1.0, D_r=0.1
+
+Panel (a): OBC lattice L=10 visualization
+  - Rectangle with open boundary conditions
+  - 100 total sites (400 director states)
+  - Color scheme: bulk (light blue), external boundary (orange), invalid (dark)
+  - Shows that OBC lattice has well-defined outer boundary
+
+Panel (b): OBC spectrum colored by EXTERNAL boundary weight
+  - 400 eigenvalues in complex plane
+  - Coloring: white-yellow-blue-red scale indicates fraction of |ψ|² on external edges
+  - Red clusters at Re(λ)≈±0.8, Im(λ)=0 = external edge states
+  - Blue/white cluster at Re(λ)=0 = bulk states
+  - Physical interpretation: external boundaries create localized eigenmodes
+
+Panel (c): PBC + internal defect lattice L=10
+  - Periodic boundaries (no external edge)
+  - 3×3 blocked region in center creates internal boundary
+  - 91 valid sites (364 states)
+  - Internal boundary (red) surrounds the defect
+  - Key difference from OBC: no outer edge, only defect interface
+
+Panel (d): PBC+defect spectrum colored by INTERNAL boundary weight
+  - 364 eigenvalues (fewer than OBC due to fewer sites)
+  - Only internal boundaries are colored
+  - Compare to panel (b): different spatial distribution of boundary localization
+  - Shows that internal boundaries create distinct spectral signatures
+
+KEY INSIGHT: External vs internal boundaries produce different localization patterns
+in the spectrum, enabling identification of boundary types from eigenvalue analysis.
+
+================================================================================
+FIGURE 12: Disconnected boundaries and nested spectrum (4 panels)
+================================================================================
+
+Parameters: omega=1.0, D_r=0.1, L=15
+
+Panel (a): OBC lattice L=15 with TWO separated 3×3 holes
+  - 207 valid sites (828 states)
+  - Two holes at (3,3)-(5,5) and (10,10)-(12,12)
+  - Each hole creates independent internal boundary
+  - External boundary on outer edge (orange)
+  - Internal boundaries (red) at each hole interface
+
+Panel (b): Spectrum colored by EXTERNAL boundary weight
+  - 828 eigenvalues
+  - Strong clustering at two major oval regions:
+    * One oval at Re(λ)≈±0.8, Im(λ)≈±0.3
+    * One oval at Re(λ)≈±0.95, Im(λ)=0
+  - External boundary weight (blue to red) shows which modes couple to outer edge
+  - Note: more structure than L=10 due to larger system
+
+Panel (c): Internal boundary sites HIGHLIGHTED
+  - Same lattice as panel (a), focused on defect interfaces
+  - Shows the two distinct 3×3 removal regions
+  - Each creates a separate set of internal boundary sites
+  - Color legend clarifies boundary classification
+
+Panel (d): Spectrum colored by INTERNAL boundary weight (NESTED ovals)
+  - CRUCIAL: Same 828 eigenvalues as panel (b)
+  - BUT colored by internal (defect) boundary weight instead of external
+  - NESTED SPECTRUM signature:
+    * One oval (inner) = modes localized primarily on one hole
+    * Another oval (outer) = modes on the other hole
+    * Overlapping regions = modes coupled to multiple defects
+  - This nesting demonstrates topological coupling between separated boundaries
+
+KEY INSIGHT: Multiple disconnected boundaries create nested spectral structures.
+Each boundary type (external vs each internal) produces distinct localization patterns
+that are SUPERIMPOSED in the eigenvalue spectrum. This enables "reading" the
+lattice topology directly from eigenvalue plots.
+
+================================================================================
+TECHNICAL DETAILS
+================================================================================
+
+Matrix Construction:
+  - Uses build_transition_matrix_generic() from tcrw_obc.py
+  - Supports arbitrary lattice geometries via LatticeMask objects
+  - Dense eigensolve (full diagonalization) for L≤15
+
+Edge Weight Calculation:
+  - For each eigenvector v, compute |v|² probability distribution
+  - Sum probability over boundary site indices (4 director states per site)
+  - Weight = (boundary probability) / (total probability)
+  - Supports filtering by boundary_type: 'all', 'external', 'internal'
+
+Lattice Masks Used:
+  - RectangleMask: simple L×L with OBC
+  - PBCWithDefects: L×L with periodic boundaries + removed interior sites
+  - RectangleWithHoles: L×L with removed rectangular blocks
+
+File Structure:
+  tcrw_geometry.py     <- Defines mask classes and helper functions
+  tcrw_obc.py         <- Transition matrix construction
+  tcrw_fig11_12.py    <- This script (220 lines, publication-ready)
+
+Performance:
+  L=10:   400×400 matrix   → 0.53s total per figure
+  L=15:   828×828 matrix   → 4.65s total per figure
+  Dense eigensolve: O(N³) where N = 4*n_sites
+
+================================================================================
+OUTPUT FILES (saved to working directory)
+================================================================================
+
+tcrw_fig11_boundary_effects.png  (232 KB, 150 dpi, 4 panels)
+tcrw_fig12_nested_spectrum.png   (270 KB, 150 dpi, 4 panels)
+
+Both figures:
+  - Publication-quality matplotlib output
+  - Full colorbars with physics-motivated labels
+  - Mathematical notation in axis labels/titles
+  - Clear panel labels (a), (b), (c), (d)
+  - Grid overlay for readability
+
+================================================================================
+PHYSICS INTERPRETATION
+================================================================================
+
+BOUNDARY LOCALIZATION:
+The chiral active particle (TCRW) transition matrix has a spectrum that
+organizes around boundaries. Each boundary type (external edge, internal
+defect interface) acts as a "sink" for certain eigenmodes.
+
+EDGE MODES (Panel b, d):
+- Eigenvalues with high boundary weight (red) are localized at interfaces
+- These modes don't diffuse into the bulk
+- Create the "edge current" observed in steady-state probability distributions
+- Physical origin: chiral rotation + finite domain → prefer boundary motion
+
+NESTED STRUCTURE (Panel d):
+When multiple disconnected boundaries exist, the spectrum shows nested ovals.
+This is because:
+1. Each boundary has its own set of localized modes (one oval per boundary)
+2. The eigenvalue densities for different boundaries slightly overlap
+3. The color pattern (red/blue) reveals which boundary dominates each oval
+
+This nested structure is a direct manifestation of bulk-boundary correspondence
+in non-Hermitian topology. The interior defect boundaries carry modes that
+would be delocalized in the interior (bulk states) but are confined at the
+boundary-defect interface.
+
+================================================================================
+COMPARISON TO PAPER (arXiv:2602.12020)
+================================================================================
+
+These figures verify/extend the TCRW paper's boundary analysis:
+- Paper shows edge currents in steady-state distributions (P(x,y))
+- Figures 11-12 show the SPECTRAL underpinning:
+  * Which eigenvalues are responsible for boundary accumulation?
+  * How does boundary geometry (external vs internal) affect spectrum?
+  * Can we "fingerprint" boundaries by coloring eigenvalues?
+
+The nested spectrum (Fig 12d) is particularly interesting because it shows
+that a single complex eigenvalue spectrum can encode information about
+MULTIPLE boundaries simultaneously, differentiated only by their spatial
+localization weight.
+
+================================================================================

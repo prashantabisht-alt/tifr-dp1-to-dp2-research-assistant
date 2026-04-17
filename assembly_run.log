@@ -1,0 +1,230 @@
+======================================================================
+TCRW Self-Assembly Simulation (Figure 6 from arXiv:2602.12020)
+======================================================================
+
+Initializing 5×5 assembly system...
+  Target: 5×5 = 25 tiles
+  Arena: 30×30
+  Bonds: 40 unique bonds
+
+Generating Fig 6(a): Tile catalog, target structure, interaction matrix...
+Saved: tcrw_fig6a_tiles.png
+
+Generating Fig 6(b)-(c): Assembly trajectories...
+Simulating trajectory for ω=0.5, D_r=0.01...
+  Placed 3/25 tiles (τ_SA = 156019)
+  Placed 6/25 tiles (τ_SA = 277512)
+  Placed 9/25 tiles (τ_SA = 382832)
+  Placed 13/25 tiles (τ_SA = 479244)
+Simulating trajectory for ω=1.0, D_r=0.01...
+  Placed 3/25 tiles (τ_SA = 175029)
+  Placed 4/25 tiles (τ_SA = 376934)
+  Placed 4/25 tiles (τ_SA = 626934)
+  Placed 4/25 tiles (τ_SA = 876934)
+Saved: tcrw_fig6bc_trajectories.png
+
+Generating Fig 6(d): τ_SA vs D_r...
+(This will take a few minutes...)
+  Running τ_SA vs D_r: ω=0.5, D_r=0.01
+  Placed 3/25 tiles (τ_SA = 156019)
+  Placed 6/25 tiles (τ_SA = 277512)
+  Placed 9/25 tiles (τ_SA = 382832)
+  Placed 13/25 tiles (τ_SA = 479244)
+  Placed 2/25 tiles (τ_SA = 211106)
+  Placed 5/25 tiles (τ_SA = 321089)
+  Placed 9/25 tiles (τ_SA = 413789)
+  Placed 12/25 tiles (τ_SA = 577440)
+  Running τ_SA vs D_r: ω=0.5, D_r=0.05
+  Placed 3/25 tiles (τ_SA = 158258)
+  Placed 6/25 tiles (τ_SA = 261097)
+  Placed 9/25 tiles (τ_SA = 382495)
+  Placed 13/25 tiles (τ_SA = 441952)
+  Placed 2/25 tiles (τ_SA = 202906)
+  Placed 5/25 tiles (τ_SA = 317498)
+  Placed 9/25 tiles (τ_SA = 400395)
+  Placed 12/25 tiles (τ_SA = 523948)
+  Running τ_SA vs D_r: ω=0.5, D_r=0.1
+  Placed 3/25 tiles (τ_SA = 158480)
+  Placed 6/25 tiles (τ_SA = 263326)
+  Placed 9/25 tiles (τ_SA = 382161)
+  Placed 13/25 tiles (τ_SA = 450604)
+  Placed 2/25 tiles (τ_SA = 203954)
+  Placed 5/25 tiles (τ_SA = 314008)
+  Placed 9/25 tiles (τ_SA = 373781)
+  Placed 12/25 tiles (τ_SA = 490068)
+  Running τ_SA vs D_r: ω=0.5, D_r=0.2
+  Placed 3/25 tiles (τ_SA = 151329)
+  Placed 6/25 tiles (τ_SA = 258956)
+  Placed 9/25 tiles (τ_SA = 390109)
+  Placed 13/25 tiles (τ_SA = 446784)
+  Placed 2/25 tiles (τ_SA = 200303)
+  Placed 5/25 tiles (τ_SA = 304579)
+  Placed 9/25 tiles (τ_SA = 376332)
+  Placed 12/25 tiles (τ_SA = 489952)
+  Running τ_SA vs D_r: ω=0.8, D_r=0.01
+  Placed 3/25 tiles (τ_SA = 151512)
+  Placed 6/25 tiles (τ_SA = 285653)
+  Placed 9/25 tiles (τ_SA = 393156)
+  Placed 13/25 tiles (τ_SA = 467699)
+  Placed 2/25 tiles (τ_SA = 235696)
+  Placed 5/25 tiles (τ_SA = 368010)
+  Placed 9/25 tiles (τ_SA = 447179)
+  Placed 12/25 tiles (τ_SA = 582931)
+  Running τ_SA vs D_r: ω=0.8, D_r=0.05
+  Placed 3/25 tiles (τ_SA = 188256)
+  Placed 6/25 tiles (τ_SA = 300747)
+  Placed 9/25 tiles (τ_SA = 417231)
+  Placed 13/25 tiles (τ_SA = 474515)
+  Placed 2/25 tiles (τ_SA = 204562)
+  Placed 5/25 tiles (τ_SA = 323958)
+  Placed 9/25 tiles (τ_SA = 383986)
+  Placed 12/25 tiles (τ_SA = 501601)
+  Running τ_SA vs D_r: ω=0.8, D_r=0.1
+  Placed 3/25 tiles (τ_SA = 155970)
+  Placed 6/25 tiles (τ_SA = 266427)
+  Placed 9/25 tiles (τ_SA = 375125)
+  Placed 13/25 tiles (τ_SA = 433794)
+  Placed 2/25 tiles (τ_SA = 215882)
+  Placed 5/25 tiles (τ_SA = 323200)
+  Placed 9/25 tiles (τ_SA = 392465)
+  Placed 12/25 tiles (τ_SA = 501016)
+  Running τ_SA vs D_r: ω=0.8, D_r=0.2
+  Placed 3/25 tiles (τ_SA = 162844)
+  Placed 6/25 tiles (τ_SA = 267465)
+  Placed 9/25 tiles (τ_SA = 377888)
+  Placed 13/25 tiles (τ_SA = 450037)
+  Placed 2/25 tiles (τ_SA = 200763)
+  Placed 5/25 tiles (τ_SA = 307442)
+  Placed 9/25 tiles (τ_SA = 365186)
+  Placed 12/25 tiles (τ_SA = 481261)
+  Running τ_SA vs D_r: ω=1.0, D_r=0.01
+  Placed 3/25 tiles (τ_SA = 175029)
+  Placed 4/25 tiles (τ_SA = 376934)
+  Placed 4/25 tiles (τ_SA = 626934)
+  Placed 4/25 tiles (τ_SA = 876934)
+  Placed 1/25 tiles (τ_SA = 250000)
+  Placed 1/25 tiles (τ_SA = 500000)
+  Placed 2/25 tiles (τ_SA = 701762)
+  Placed 2/25 tiles (τ_SA = 951762)
+  Running τ_SA vs D_r: ω=1.0, D_r=0.05
+  Placed 3/25 tiles (τ_SA = 198034)
+  Placed 4/25 tiles (τ_SA = 431586)
+  Placed 6/25 tiles (τ_SA = 610834)
+  Placed 9/25 tiles (τ_SA = 762830)
+  Placed 2/25 tiles (τ_SA = 214158)
+  Placed 4/25 tiles (τ_SA = 370120)
+  Placed 7/25 tiles (τ_SA = 478113)
+  Placed 7/25 tiles (τ_SA = 728113)
+  Running τ_SA vs D_r: ω=1.0, D_r=0.1
+  Placed 3/25 tiles (τ_SA = 195608)
+  Placed 6/25 tiles (τ_SA = 311035)
+  Placed 8/25 tiles (τ_SA = 479233)
+  Placed 12/25 tiles (τ_SA = 570989)
+  Placed 2/25 tiles (τ_SA = 210746)
+  Placed 5/25 tiles (τ_SA = 323935)
+  Placed 8/25 tiles (τ_SA = 442281)
+  Placed 11/25 tiles (τ_SA = 544102)
+  Running τ_SA vs D_r: ω=1.0, D_r=0.2
+  Placed 3/25 tiles (τ_SA = 183172)
+  Placed 6/25 tiles (τ_SA = 321465)
+  Placed 9/25 tiles (τ_SA = 449164)
+  Placed 13/25 tiles (τ_SA = 539903)
+  Placed 2/25 tiles (τ_SA = 206852)
+  Placed 5/25 tiles (τ_SA = 320311)
+  Placed 9/25 tiles (τ_SA = 389326)
+  Placed 12/25 tiles (τ_SA = 507783)
+Saved: tcrw_fig6d_tau_vs_Dr.png
+
+Generating Fig 6(e): τ_SA vs ω...
+(This will take a few minutes...)
+Running τ_SA vs ω: D_r=0.01
+  ω=0.00
+  Placed 1/25 tiles (τ_SA = 250000)
+  Placed 2/25 tiles (τ_SA = 466419)
+  Placed 2/25 tiles (τ_SA = 716419)
+  Placed 2/25 tiles (τ_SA = 966419)
+  Placed 1/25 tiles (τ_SA = 250000)
+  Placed 1/25 tiles (τ_SA = 500000)
+  Placed 1/25 tiles (τ_SA = 750000)
+  Placed 1/25 tiles (τ_SA = 1000000)
+  ω=0.12
+  Placed 3/25 tiles (τ_SA = 166758)
+  Placed 4/25 tiles (τ_SA = 400756)
+  Placed 6/25 tiles (τ_SA = 572325)
+  Placed 9/25 tiles (τ_SA = 691739)
+  Placed 2/25 tiles (τ_SA = 232954)
+  Placed 5/25 tiles (τ_SA = 356030)
+  Placed 9/25 tiles (τ_SA = 429159)
+  Placed 12/25 tiles (τ_SA = 562214)
+  ω=0.25
+  Placed 3/25 tiles (τ_SA = 181134)
+  Placed 6/25 tiles (τ_SA = 335458)
+  Placed 9/25 tiles (τ_SA = 441192)
+  Placed 12/25 tiles (τ_SA = 598878)
+  Placed 2/25 tiles (τ_SA = 202853)
+  Placed 5/25 tiles (τ_SA = 343962)
+  Placed 9/25 tiles (τ_SA = 427065)
+  Placed 12/25 tiles (τ_SA = 577853)
+  ω=0.38
+  Placed 3/25 tiles (τ_SA = 165300)
+  Placed 5/25 tiles (τ_SA = 339092)
+  Placed 7/25 tiles (τ_SA = 511943)
+  Placed 11/25 tiles (τ_SA = 587292)
+  Placed 2/25 tiles (τ_SA = 231958)
+  Placed 5/25 tiles (τ_SA = 366941)
+  Placed 9/25 tiles (τ_SA = 476172)
+  Placed 12/25 tiles (τ_SA = 604404)
+  ω=0.50
+  Placed 3/25 tiles (τ_SA = 156019)
+  Placed 6/25 tiles (τ_SA = 277512)
+  Placed 9/25 tiles (τ_SA = 382832)
+  Placed 13/25 tiles (τ_SA = 479244)
+  Placed 2/25 tiles (τ_SA = 211106)
+  Placed 5/25 tiles (τ_SA = 321089)
+  Placed 9/25 tiles (τ_SA = 413789)
+  Placed 12/25 tiles (τ_SA = 577440)
+  ω=0.62
+  Placed 3/25 tiles (τ_SA = 153739)
+  Placed 6/25 tiles (τ_SA = 295274)
+  Placed 9/25 tiles (τ_SA = 400332)
+  Placed 13/25 tiles (τ_SA = 522522)
+  Placed 2/25 tiles (τ_SA = 203884)
+  Placed 5/25 tiles (τ_SA = 345188)
+  Placed 9/25 tiles (τ_SA = 432427)
+  Placed 10/25 tiles (τ_SA = 637192)
+  ω=0.75
+  Placed 3/25 tiles (τ_SA = 150497)
+  Placed 6/25 tiles (τ_SA = 342307)
+  Placed 9/25 tiles (τ_SA = 472070)
+  Placed 13/25 tiles (τ_SA = 606990)
+  Placed 2/25 tiles (τ_SA = 200125)
+  Placed 4/25 tiles (τ_SA = 384983)
+  Placed 7/25 tiles (τ_SA = 495478)
+  Placed 10/25 tiles (τ_SA = 655067)
+  ω=0.88
+  Placed 3/25 tiles (τ_SA = 180834)
+  Placed 6/25 tiles (τ_SA = 305338)
+  Placed 9/25 tiles (τ_SA = 431636)
+  Placed 12/25 tiles (τ_SA = 572427)
+  Placed 2/25 tiles (τ_SA = 210516)
+  Placed 4/25 tiles (τ_SA = 379136)
+  Placed 7/25 tiles (τ_SA = 510354)
+  Placed 10/25 tiles (τ_SA = 640728)
+  ω=1.00
+  Placed 3/25 tiles (τ_SA = 175029)
+  Placed 4/25 tiles (τ_SA = 376934)
+  Placed 4/25 tiles (τ_SA = 626934)
+  Placed 4/25 tiles (τ_SA = 876934)
+  Placed 1/25 tiles (τ_SA = 250000)
+  Placed 1/25 tiles (τ_SA = 500000)
+  Placed 2/25 tiles (τ_SA = 701762)
+  Placed 2/25 tiles (τ_SA = 951762)
+Saved: tcrw_fig6e_tau_vs_omega.png
+
+======================================================================
+All figures generated successfully!
+  - tcrw_fig6a_tiles.png
+  - tcrw_fig6bc_trajectories.png
+  - tcrw_fig6d_tau_vs_Dr.png
+  - tcrw_fig6e_tau_vs_omega.png
+======================================================================

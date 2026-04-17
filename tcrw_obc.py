@@ -114,6 +114,115 @@ def build_transition_matrix(omega, D_r, L):
     return P
 
 
+def build_transition_matrix_generic(omega, D_r, mask):
+    """
+    Build transition matrix for arbitrary lattice geometry defined by a mask.
+
+    Parameters
+    ----------
+    omega : float
+        Chirality parameter.
+    D_r : float
+        Noise probability.
+    mask : LatticeMask
+        Lattice geometry (from tcrw_geometry.py).
+
+    Returns
+    -------
+    P : sparse CSC matrix, shape (4*n_sites, 4*n_sites), column-stochastic.
+    """
+    from tcrw_geometry import DX, DY
+
+    N = mask.n_states
+    rows, cols, vals = [], [], []
+
+    for x, y in mask.valid_sites:
+        for d in range(4):
+            i = mask.state_index(x, y, d)
+
+            # --- Noise step (prob D_r): stay put, rotate ---
+            # CCW: d -> (d-1)%4, prob omega * D_r
+            d_ccw = (d - 1) % 4
+            j_ccw = mask.state_index(x, y, d_ccw)
+            rows.append(j_ccw); cols.append(i); vals.append(omega * D_r)
+
+            # CW: d -> (d+1)%4, prob (1-omega) * D_r
+            d_cw = (d + 1) % 4
+            j_cw = mask.state_index(x, y, d_cw)
+            rows.append(j_cw); cols.append(i); vals.append((1 - omega) * D_r)
+
+            # --- Chiral step (prob 1-D_r): translate + rotate ---
+            nb = mask.neighbor(x, y, d)
+            if nb is not None:
+                nx, ny = nb
+                # Valid move: translate, then rotate (opposite chirality)
+                # CW: d -> (d+1)%4, prob omega * (1-D_r)
+                d_cw_c = (d + 1) % 4
+                j1 = mask.state_index(nx, ny, d_cw_c)
+                rows.append(j1); cols.append(i); vals.append(omega * (1 - D_r))
+
+                # CCW: d -> (d-1)%4, prob (1-omega) * (1-D_r)
+                d_ccw_c = (d - 1) % 4
+                j2 = mask.state_index(nx, ny, d_ccw_c)
+                rows.append(j2); cols.append(i); vals.append((1 - omega) * (1 - D_r))
+            else:
+                # Blocked: stay at (x,y,d), no rotation
+                j_stay = mask.state_index(x, y, d)
+                rows.append(j_stay); cols.append(i); vals.append(1 - D_r)
+
+    P = sp.coo_matrix((vals, (rows, cols)), shape=(N, N)).tocsc()
+    return P
+
+
+def exact_steady_state_generic(omega, D_r, mask):
+    """
+    Steady-state distribution for arbitrary lattice geometry.
+
+    Returns
+    -------
+    Pxy : dict mapping (x,y) -> probability
+    pi_vec : numpy array of shape (4*n_sites,)
+    """
+    P = build_transition_matrix_generic(omega, D_r, mask)
+    N = P.shape[0]
+
+    if N <= 2000:
+        P_dense = P.toarray()
+        eigenvalues, eigenvectors = np.linalg.eig(P_dense)
+        idx = np.argmin(np.abs(eigenvalues - 1.0))
+        pi = eigenvectors[:, idx].real
+    else:
+        try:
+            eigenvalues, eigenvectors = spla.eigs(P, k=1, sigma=1.0,
+                                                   which='LM', tol=1e-10)
+            pi = eigenvectors[:, 0].real
+        except Exception:
+            pi = np.ones(N) / N
+            for _ in range(50000):
+                pi_new = P @ pi
+                pi_new /= np.sum(np.abs(pi_new))
+                if np.max(np.abs(pi_new - pi)) < 1e-14:
+                    break
+                pi = pi_new
+            pi = pi_new
+
+    if np.sum(pi) < 0:
+        pi = -pi
+    pi = np.abs(pi)
+    pi = pi / np.sum(pi)
+
+    # Build P(x,y) as dict
+    n_sites = mask.n_sites
+    Pxy = {}
+    for si, (x, y) in enumerate(mask.valid_sites):
+        prob = 0.0
+        for d in range(4):
+            prob += pi[d * n_sites + si]
+        Pxy[(x, y)] = prob
+
+    return Pxy, pi
+
+
 def exact_steady_state(omega, D_r, L):
     """
     Find the steady-state distribution pi of the transition matrix P.
