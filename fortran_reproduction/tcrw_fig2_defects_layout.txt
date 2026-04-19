@@ -1,0 +1,8 @@
+# TCRW Fig 2 defect cell layout
+# n_defects = 5
+# columns: x  y
+   4    5
+   3    5
+   5    5
+   4    4
+   4    6

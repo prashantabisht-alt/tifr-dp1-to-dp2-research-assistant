@@ -99,3 +99,78 @@ subroutine tcrw_step_obc(x, y, d, L, omega, D_r)
       ! chiral translation blocked → entire step skipped (direction unchanged)
    end if
 end subroutine tcrw_step_obc
+
+
+!---------------------------------------------------------------------
+! tcrw_step_mask —  OBC with a generic wall mask (supports defects)
+!
+!   mask(0:Lx-1, 0:Ly-1) : .true.  → site is allowed (walker may stand here)
+!                         .false. → site is a wall  (walker cannot enter)
+!
+!   step_type (out):
+!      0 = noise step         (director rotated, no translation attempt)
+!      1 = chiral success     (walker translated by one lattice unit in
+!                              the OLD direction, then director rotated)
+!      2 = chiral blocked     (target off-grid or mask=.false.;
+!                              entire step skipped, director unchanged)
+!
+! Intended use for Fig 2:  the caller saves d BEFORE the call; if
+! step_type == 1 the direction of the translation is the saved d
+! (since chiral-step rule is translate-then-rotate).
+!
+! The distinction between step_type 0 and 2 lets the caller maintain the
+! "prev_was_noise" flag that drives the J = J_ω + J_Dr decomposition in
+! Osat et al. Fig 2(c)-(e): a translation at step t is attributed to
+!   J_Dr  if prev step (t-1) was a noise step  (prev_was_noise = .true.)
+!   J_ω   otherwise                            (prev_was_noise = .false.)
+! A blocked chiral attempt DOES flip prev_was_noise to .false. — it's a
+! chiral attempt, not a noise event — so the next successful translation
+! after a blocked attempt is attributed to J_ω, matching the paper's
+! "otherwise it is part of J_ω" wording.
+!---------------------------------------------------------------------
+subroutine tcrw_step_mask(x, y, d, mask, Lx, Ly, omega, D_r, step_type)
+   implicit none
+   integer,  intent(inout) :: x, y, d
+   logical,  intent(in)    :: mask(0:, 0:)
+   integer,  intent(in)    :: Lx, Ly
+   real(dp), intent(in)    :: omega, D_r
+   integer,  intent(out)   :: step_type
+   real(dp) :: grnd
+   real(dp) :: r_step, r_rot
+   integer  :: nx, ny
+   integer, parameter :: DX(0:3) = (/ 0,  1,  0, -1 /)
+   integer, parameter :: DY(0:3) = (/ 1,  0, -1,  0 /)
+
+   r_step = grnd()
+   r_rot  = grnd()
+
+   if (r_step < D_r) then
+      ! ---- NOISE step ----
+      if (r_rot < omega) then
+         d = mod(d + 3, 4)           ! CCW
+      else
+         d = mod(d + 1, 4)           ! CW
+      end if
+      step_type = 0
+   else
+      ! ---- CHIRAL step (translate then rotate, honouring mask) ----
+      nx = x + DX(d)
+      ny = y + DY(d)
+      if (nx >= 0 .and. nx < Lx .and. ny >= 0 .and. ny < Ly) then
+         if (mask(nx, ny)) then
+            x = nx
+            y = ny
+            if (r_rot < omega) then
+               d = mod(d + 1, 4)     ! CW
+            else
+               d = mod(d + 3, 4)     ! CCW
+            end if
+            step_type = 1
+         else
+            step_type = 2             ! wall (defect or boundary site)
+         end if
+      else
+         step_type = 2                ! would leave the L × L grid
+      end if
+   end if
+end subroutine tcrw_step_mask
