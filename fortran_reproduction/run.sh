@@ -50,9 +50,24 @@
 #   tcrw-plot-fig2-defects-currents-pdf  plot Fig 2 defects 2×3 currents  (PDF only)
 #   tcrw-plot-fig2-defects-currents-qt   plot Fig 2 defects 2×3 currents  (qt only)
 #   tcrw-fig2-defects-all                tcrw-fig2-defects → all three defects plots
+#   tcrw-fig3a              compile + run tcrw_fig3a.f90  (P_edge/P_bulk vs D_r, ~3–5 min)
+#   tcrw-plot-fig3a         plot Fig 3(a) (PDF then interactive qt)
+#   tcrw-plot-fig3a-pdf     plot Fig 3(a) (PDF only; headless)
+#   tcrw-plot-fig3a-qt      plot Fig 3(a) (interactive qt only)
+#   tcrw-fig3a-all          tcrw-fig3a → tcrw-plot-fig3a
+#   tcrw-fig3b              compile + run tcrw_fig3b.f90  (|J_Dr|/|J_ω| wall vs D_r, ~25 min)
+#   tcrw-plot-fig3b         plot Fig 3(b) (PDF then interactive qt)
+#   tcrw-plot-fig3b-pdf     plot Fig 3(b) (PDF only; headless)
+#   tcrw-plot-fig3b-qt      plot Fig 3(b) (interactive qt only)
+#   tcrw-fig3b-all          tcrw-fig3b → tcrw-plot-fig3b
+#   tcrw-fig3f              compile + run tcrw_fig3f.f90  (P_edge/P_bulk vs ω,  ~5–10 min)
+#   tcrw-plot-fig3f         plot Fig 3(f) (PDF then interactive qt)
+#   tcrw-plot-fig3f-pdf     plot Fig 3(f) (PDF only; headless)
+#   tcrw-plot-fig3f-qt      plot Fig 3(f) (interactive qt only)
+#   tcrw-fig3f-all          tcrw-fig3f → tcrw-plot-fig3f
 #   tcrw-clean              remove .build/ and generated .txt / .pdf
 #
-# (Fig 2, 3, ... will get their own target rows as we go.)
+# (Fig 3, ... will get more target rows as we add panels.)
 #
 # Requires:  gfortran (Homebrew gcc on macOS), gnuplot.
 #            Apple Accelerate is auto-detected here for later figures
@@ -185,6 +200,27 @@ tcrw_fig2_defects_all() {
   tcrw_plot_fig2_defects_currents_pdf
 }
 
+# ---- Fig 3(a): P_edge/P_bulk vs D_r (ω = 1, L ∈ {4,9,19,49}) ----
+tcrw_fig3a()          { compile_and_run tcrw_fig3a tcrw_fig3a.f90; }
+tcrw_plot_fig3a()     { plot_gnu tcrw_fig3a.gnu both; }
+tcrw_plot_fig3a_pdf() { plot_gnu tcrw_fig3a.gnu pdf;  }
+tcrw_plot_fig3a_qt()  { plot_gnu tcrw_fig3a.gnu qt;   }
+tcrw_fig3a_all()      { tcrw_fig3a; tcrw_plot_fig3a; }
+
+# ---- Fig 3(b): |J_Dr|_wall / |J_ω|_wall vs D_r  (ω = 1, L ∈ {4,9,19,49}) ----
+tcrw_fig3b()          { compile_and_run tcrw_fig3b tcrw_fig3b.f90; }
+tcrw_plot_fig3b()     { plot_gnu tcrw_fig3b.gnu both; }
+tcrw_plot_fig3b_pdf() { plot_gnu tcrw_fig3b.gnu pdf;  }
+tcrw_plot_fig3b_qt()  { plot_gnu tcrw_fig3b.gnu qt;   }
+tcrw_fig3b_all()      { tcrw_fig3b; tcrw_plot_fig3b; }
+
+# ---- Fig 3(f): P_edge/P_bulk vs ω  (D_r = 10^-3, L ∈ {10,19,49}) ----
+tcrw_fig3f()          { compile_and_run tcrw_fig3f tcrw_fig3f.f90; }
+tcrw_plot_fig3f()     { plot_gnu tcrw_fig3f.gnu both; }
+tcrw_plot_fig3f_pdf() { plot_gnu tcrw_fig3f.gnu pdf;  }
+tcrw_plot_fig3f_qt()  { plot_gnu tcrw_fig3f.gnu qt;   }
+tcrw_fig3f_all()      { tcrw_fig3f; tcrw_plot_fig3f; }
+
 tcrw_clean() {
   echo "==> cleaning .build and generated outputs"
   rm -rf "$BUILD"
@@ -214,6 +250,12 @@ tcrw_clean() {
   rm -f "$ROOT"/tcrw_fig2_defects_occ.pdf
   rm -f "$ROOT"/tcrw_fig2_defects_traj.pdf
   rm -f "$ROOT"/tcrw_fig2_defects_currents.pdf
+  rm -f "$ROOT"/tcrw_fig3a_summary.txt
+  rm -f "$ROOT"/tcrw_fig3a.pdf
+  rm -f "$ROOT"/tcrw_fig3b_summary.txt
+  rm -f "$ROOT"/tcrw_fig3b.pdf
+  rm -f "$ROOT"/tcrw_fig3f_summary.txt
+  rm -f "$ROOT"/tcrw_fig3f.pdf
   # (more cleanup rows will be added as we create more figures)
   echo "   done."
 }
@@ -268,6 +310,21 @@ case "$1" in
   tcrw-plot-fig2-defects-currents-pdf)  tcrw_plot_fig2_defects_currents_pdf  ;;
   tcrw-plot-fig2-defects-currents-qt)   tcrw_plot_fig2_defects_currents_qt   ;;
   tcrw-fig2-defects-all)                tcrw_fig2_defects_all                ;;
+  tcrw-fig3a)           tcrw_fig3a            ;;
+  tcrw-plot-fig3a)      tcrw_plot_fig3a       ;;
+  tcrw-plot-fig3a-pdf)  tcrw_plot_fig3a_pdf   ;;
+  tcrw-plot-fig3a-qt)   tcrw_plot_fig3a_qt    ;;
+  tcrw-fig3a-all)       tcrw_fig3a_all        ;;
+  tcrw-fig3b)           tcrw_fig3b            ;;
+  tcrw-plot-fig3b)      tcrw_plot_fig3b       ;;
+  tcrw-plot-fig3b-pdf)  tcrw_plot_fig3b_pdf   ;;
+  tcrw-plot-fig3b-qt)   tcrw_plot_fig3b_qt    ;;
+  tcrw-fig3b-all)       tcrw_fig3b_all        ;;
+  tcrw-fig3f)           tcrw_fig3f            ;;
+  tcrw-plot-fig3f)      tcrw_plot_fig3f       ;;
+  tcrw-plot-fig3f-pdf)  tcrw_plot_fig3f_pdf   ;;
+  tcrw-plot-fig3f-qt)   tcrw_plot_fig3f_qt    ;;
+  tcrw-fig3f-all)       tcrw_fig3f_all        ;;
   tcrw-clean)           tcrw_clean            ;;
   *)
     echo "unknown target: $1"
