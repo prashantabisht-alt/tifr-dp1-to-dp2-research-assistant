@@ -77,16 +77,21 @@ set title  "TCRW Fig 3(b) — |J_{D_r}|/|J_{/Symbol w}| on left wall vs D_r   (�
 # (valid as a large-D_r divergence; at small D_r it goes like D_r
 #  itself, so the plateau of the data sitting above it is the real
 #  edge-current physics.)
-guide(x) = x / (1.0 - x)
+# Clip at x < 0.999 to avoid 1/0 at x = 1 (which would poison log-y scaling).
+guide(x) = (x < 0.999) ? x / (1.0 - x) : 1/0
 
 # ---- common plot command (shared across qt and pdf) ----
 # col 1 = L, col 2 = D_r, col 3 = ratio
+# FILTER: reject rows with ratio > 1e10 (sentinel for abs_Jom == 0 at D_r = 1).
+# Older summary files wrote '1.79769+308' (Fortran ES13.5 drops the 'E' for
+# 3-digit exponents); gnuplot parses that as 1.8e308 and its autoscale
+# overrides set yrange, collapsing the real plateau to a single pixel.
 plot_cmd = \
-  "'" . f . "' u ($1==4  ? $2 : 1/0):($1==4  ? $3 : 1/0) w lp ls 1 title 'L = 4', "  . \
-  "'" . f . "' u ($1==9  ? $2 : 1/0):($1==9  ? $3 : 1/0) w lp ls 2 title 'L = 9', "  . \
-  "'" . f . "' u ($1==19 ? $2 : 1/0):($1==19 ? $3 : 1/0) w lp ls 3 title 'L = 19', " . \
-  "'" . f . "' u ($1==49 ? $2 : 1/0):($1==49 ? $3 : 1/0) w lp ls 4 title 'L = 49', " . \
-  "guide(x)                                             w l  ls 99 title 'D_r/(1-D_r)'"
+  "'" . f . "' u ($1==4  && $3 < 1e10 ? $2 : 1/0):($1==4  && $3 < 1e10 ? $3 : 1/0) w lp ls 1 title 'L = 4', "  . \
+  "'" . f . "' u ($1==9  && $3 < 1e10 ? $2 : 1/0):($1==9  && $3 < 1e10 ? $3 : 1/0) w lp ls 2 title 'L = 9', "  . \
+  "'" . f . "' u ($1==19 && $3 < 1e10 ? $2 : 1/0):($1==19 && $3 < 1e10 ? $3 : 1/0) w lp ls 3 title 'L = 19', " . \
+  "'" . f . "' u ($1==49 && $3 < 1e10 ? $2 : 1/0):($1==49 && $3 < 1e10 ? $3 : 1/0) w lp ls 4 title 'L = 49', " . \
+  "guide(x)                                                                        w l  ls 99 title 'D_r/(1-D_r)'"
 
 #=====================================================================
 # PDF  (headless — runs FIRST so no qt window is created during PDF)

@@ -60,15 +60,26 @@
 !       ratio         = |J_Dr|_wall / |J_ω|_wall
 !   (units: number of translations, so the ratio is dimensionless.)
 !
-! Expected physics
-! ----------------
-!   - Left wall carries a CCW chiral edge current at ω = 1; on the
-!     left wall CCW means walker slides DOWNWARD, so the dominant
-!     contribution to J_ω on the left wall is in the -y direction
-!     (J_y_om < 0, |J_y_om| large).
-!   - J_Dr on the left wall is the post-noise current.  At small D_r
-!     it's weak (noise is rare); at large D_r every other step is a
-!     noise followed by a scattering step.
+! Expected physics  (signs cross-checked with paper page 3 & Fig 3(e))
+! -------------------------------------------------------------------
+!   - At ω = 1 the chiral rule rotates the DIRECTOR clockwise.  With
+!     the convention d = 0↑, 1→, 2↓, 3←, this produces a walker whose
+!     orbit in REAL SPACE is counter-clockwise (director CW ⇒ spatial
+!     CCW; the 90° translate-then-rotate mapping flips the handedness).
+!     On the LEFT WALL, a CCW real-space orbit's wall-attached leg
+!     goes UPWARD, so the ω-attributed left-wall current satisfies
+!         Jy_w_om > 0    (+π/4  once the Jx>0 component is included)
+!     which matches Fig 3(j) in the paper (θ_Jω = +π/4 at ω = 1).
+!   - The noise-triggered current J_Dr on the left wall at ω = 1
+!     comes from a different mechanism: the walker gets TRAPPED facing
+!     ← at x = 0 (chiral step blocked, no direction update), so it
+!     sits until a noise step rotates ←→↓ (CCW at ω=1).  The subsequent
+!     chiral step then translates DOWN by one site, contributing
+!         Jy_w_Dr < 0    (-π/2, θ_JDr at ω=1, small D_r)
+!     and re-trapping the walker one site down.  Every noise event
+!     at the wall drifts the walker DOWN by one — this is the source
+!     of the "skipping orbit" edge current.
+!   - So at ω = 1 we expect sign(Jy_w_om) = +1 and sign(Jy_w_Dr) = -1.
 !   - Ratio at small D_r:  order 1, D_r-independent plateau.
 !   - Ratio at D_r → 1:   diverges as roughly  D_r / (1 - D_r)
 !     (trivial counting limit — probability of "chiral-then-chiral" is
@@ -118,8 +129,9 @@
 !     value; the log-log plot should climb steeply.
 !   - At D_r = 10^-3 the plateau value should be O(1) and the same for
 !     all four L.
-!   - Jy_w_om should be NEGATIVE and dominate |J_ω|_wall (CCW edge
-!     current flows down along the left wall).
+!   - Jy_w_om should be POSITIVE  (θ_Jω = +π/4 at ω = 1)  and
+!     Jy_w_Dr should be NEGATIVE (θ_JDr = −π/2 at ω = 1, small D_r).
+!   - See the "Expected physics" block above for the orbit derivation.
 !
 ! Build :  gfortran -O2 -fno-range-check -ffree-line-length-none \
 !                   tcrw_fig3b.f90 -o tcrw_fig3b
@@ -344,7 +356,12 @@ contains
       if (abs_Jom > 0.0_dp) then
          ratio = abs_JDr / abs_Jom
       else
-         ratio = huge(1.0_dp)        ! no ω-attributed translations: ratio infinite
+         ! Physically, D_r = 1 gives abs_Jom = 0 (no chiral continuations).
+         ! Return a FINITE sentinel (1e15) so the printout is parseable by
+         ! gnuplot (ES13.5 can't format 1.8e308 — drops the 'E' and prints
+         ! '1.79769+308', which confuses autoscale on log y).  The plot
+         ! filter in tcrw_fig3b.gnu rejects rows with ratio > 1e10.
+         ratio = 1.0e15_dp
       end if
    end subroutine run_one
 
