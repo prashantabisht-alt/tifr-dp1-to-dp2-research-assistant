@@ -81,6 +81,17 @@
 #   tcrw-plot-fig3g-pdf     plot Fig 3(g) (PDF only; headless)
 #   tcrw-plot-fig3g-qt      plot Fig 3(g) (interactive qt only)
 #   tcrw-fig3g-all          tcrw-fig3g → tcrw-plot-fig3g
+#   tcrw-fig3hij            compile + run tcrw_fig3hij.f90 (per-site left-wall currents vs ω, ~1 min)
+#   tcrw-plot-fig3h         plot Fig 3(h) quiver J_Dr vs ω   (PDF + qt)
+#   tcrw-plot-fig3h-pdf     plot Fig 3(h) quiver J_Dr vs ω   (PDF only)
+#   tcrw-plot-fig3h-qt      plot Fig 3(h) quiver J_Dr vs ω   (qt only)
+#   tcrw-plot-fig3i         plot Fig 3(i) quiver J_ω  vs ω   (PDF + qt)
+#   tcrw-plot-fig3i-pdf     plot Fig 3(i) quiver J_ω  vs ω   (PDF only)
+#   tcrw-plot-fig3i-qt      plot Fig 3(i) quiver J_ω  vs ω   (qt only)
+#   tcrw-plot-fig3j         plot Fig 3(j) θ_tot vs ω         (PDF + qt)
+#   tcrw-plot-fig3j-pdf     plot Fig 3(j)                    (PDF only)
+#   tcrw-plot-fig3j-qt      plot Fig 3(j)                    (qt only)
+#   tcrw-fig3hij-all        tcrw-fig3hij → all three (h/i/j) plots
 #   tcrw-clean              remove .build/ and generated .txt / .pdf
 #
 # (Fig 3, ... will get more target rows as we add panels.)
@@ -262,6 +273,24 @@ tcrw_plot_fig3g_pdf() { plot_gnu tcrw_fig3g.gnu pdf;  }
 tcrw_plot_fig3g_qt()  { plot_gnu tcrw_fig3g.gnu qt;   }
 tcrw_fig3g_all()      { tcrw_fig3g; tcrw_plot_fig3g; }
 
+# ---- Fig 3(h), 3(i), 3(j):  per-site left-wall currents vs ω (L = 10, D_r = 10^-3) ----
+tcrw_fig3hij()        { compile_and_run tcrw_fig3hij tcrw_fig3hij.f90; }
+tcrw_plot_fig3h()     { plot_gnu tcrw_fig3h.gnu both; }
+tcrw_plot_fig3h_pdf() { plot_gnu tcrw_fig3h.gnu pdf;  }
+tcrw_plot_fig3h_qt()  { plot_gnu tcrw_fig3h.gnu qt;   }
+tcrw_plot_fig3i()     { plot_gnu tcrw_fig3i.gnu both; }
+tcrw_plot_fig3i_pdf() { plot_gnu tcrw_fig3i.gnu pdf;  }
+tcrw_plot_fig3i_qt()  { plot_gnu tcrw_fig3i.gnu qt;   }
+tcrw_plot_fig3j()     { plot_gnu tcrw_fig3j.gnu both; }
+tcrw_plot_fig3j_pdf() { plot_gnu tcrw_fig3j.gnu pdf;  }
+tcrw_plot_fig3j_qt()  { plot_gnu tcrw_fig3j.gnu qt;   }
+tcrw_fig3hij_all() {
+  tcrw_fig3hij
+  tcrw_plot_fig3h_pdf
+  tcrw_plot_fig3i_pdf
+  tcrw_plot_fig3j_pdf
+}
+
 tcrw_clean() {
   echo "==> cleaning .build and generated outputs"
   rm -rf "$BUILD"
@@ -304,6 +333,11 @@ tcrw_clean() {
   rm -f "$ROOT"/tcrw_fig3f.pdf
   rm -f "$ROOT"/tcrw_fig3g_summary.txt
   rm -f "$ROOT"/tcrw_fig3g.pdf
+  rm -f "$ROOT"/tcrw_fig3hij_summary.txt
+  rm -f "$ROOT"/tcrw_fig3j_summary.txt
+  rm -f "$ROOT"/tcrw_fig3h.pdf
+  rm -f "$ROOT"/tcrw_fig3i.pdf
+  rm -f "$ROOT"/tcrw_fig3j.pdf
   # (more cleanup rows will be added as we create more figures)
   echo "   done."
 }
@@ -389,6 +423,17 @@ case "$1" in
   tcrw-plot-fig3g-pdf)  tcrw_plot_fig3g_pdf   ;;
   tcrw-plot-fig3g-qt)   tcrw_plot_fig3g_qt    ;;
   tcrw-fig3g-all)       tcrw_fig3g_all        ;;
+  tcrw-fig3hij)         tcrw_fig3hij          ;;
+  tcrw-plot-fig3h)      tcrw_plot_fig3h       ;;
+  tcrw-plot-fig3h-pdf)  tcrw_plot_fig3h_pdf   ;;
+  tcrw-plot-fig3h-qt)   tcrw_plot_fig3h_qt    ;;
+  tcrw-plot-fig3i)      tcrw_plot_fig3i       ;;
+  tcrw-plot-fig3i-pdf)  tcrw_plot_fig3i_pdf   ;;
+  tcrw-plot-fig3i-qt)   tcrw_plot_fig3i_qt    ;;
+  tcrw-plot-fig3j)      tcrw_plot_fig3j       ;;
+  tcrw-plot-fig3j-pdf)  tcrw_plot_fig3j_pdf   ;;
+  tcrw-plot-fig3j-qt)   tcrw_plot_fig3j_qt    ;;
+  tcrw-fig3hij-all)     tcrw_fig3hij_all      ;;
   tcrw-clean)           tcrw_clean            ;;
   *)
     echo "unknown target: $1"
