@@ -84,7 +84,7 @@ set label "ω = 0.5  (achiral)" at 0.52, 3e-3 left textcolor rgb '#777777' font 
 # ---- common plot command (shared across qt and pdf) ----
 # col 1 = L, col 2 = ω, col 3 = ratio
 plot_cmd = \
-  "'" . f . "' u ($1==10 ? $2 : 1/0):($1==10 ? $3 : 1/0) w lp ls 1 title 'L = 10', " . \
+  "'" . f . "' u ($1==9 ? $2 : 1/0):($1==9 ? $3 : 1/0) w lp ls 1 title 'L = 9', "   . \
   "'" . f . "' u ($1==19 ? $2 : 1/0):($1==19 ? $3 : 1/0) w lp ls 2 title 'L = 19', " . \
   "'" . f . "' u ($1==49 ? $2 : 1/0):($1==49 ? $3 : 1/0) w lp ls 3 title 'L = 49'"
 

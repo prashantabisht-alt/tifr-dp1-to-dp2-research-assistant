@@ -47,10 +47,17 @@
 !   We classify each translation by the boolean `prev_noise`:
 !      prev_noise = .true.  → flow goes into f_dr
 !      prev_noise = .false. → flow goes into f_om
-!   `prev_noise` is updated to .true. iff the just-completed step was a
-!   noise step (step_type == 0); any chiral attempt (success OR wall-
-!   blocked) sets it to .false. — that's consistent with the paper's
-!   "otherwise" clause.
+!   `prev_noise` update rule  (AUTHORS' semi-Markov convention, used
+!   throughout Fig 3 drivers as well):
+!      step_type == 0 (noise)           → prev_noise = .true.
+!      step_type == 1 (successful chiral) → prev_noise = .false.
+!      step_type == 2 (blocked chiral)  → prev_noise UNCHANGED
+!   Rationale: a wall-blocked chiral does NOT reset the "came from a
+!   noise step" memory, because the blocking wall also blocks the J_Dr
+!   accumulation that would otherwise have fired on this step.  Old
+!   version wrote `prev_noise = (step_type == 0)` unconditionally,
+!   which wiped the flag on blocked chirals and mis-attributed the
+!   next successful chiral to J_ω instead of J_Dr.
 !
 ! Cost
 ! ----
@@ -195,7 +202,7 @@ program tcrw_fig2_clean
             traj_y(int(it)) = y
          end if
 
-         prev_noise = (step_type == 0)
+         if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
 
          if (mod(it, prog_every) == 0_i8) then
             call cpu_time(t1)

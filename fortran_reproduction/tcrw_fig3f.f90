@@ -112,7 +112,7 @@ program tcrw_fig3f
 
    ! ---- Fig 3(f) parameters (single source of truth) ----
    real(dp), parameter :: D_r_fixed = 1.0e-3_dp
-   integer,  parameter :: L_list(3) = (/ 10, 19, 49 /)
+   integer,  parameter :: L_list(3) = (/ 9, 19, 49 /)   ! paper Fig 3 legend (authors' convention); ⇒ 10×10, 20×20, 50×50 grids
    integer,  parameter :: n_omega   = 21
    real(dp), parameter :: omega_min = 0.0_dp
    real(dp), parameter :: omega_max = 1.0_dp
@@ -124,7 +124,9 @@ program tcrw_fig3f
 
    ! ---- locals ----
    integer  :: iL, iW, u_sum
-   integer  :: L_cur, n_edge, n_bulk
+   ! Authors' lattice convention: label L means (L+1)×(L+1) sites (indices 0..L).
+   ! L_paper = paper legend label (written to output); L_cur = actual sites per side.
+   integer  :: L_paper, L_cur, n_edge, n_bulk
    real(dp) :: omega_cur, P_edge_norm, P_bulk_norm, ratio
    real(dp) :: omega_values(n_omega)
    real(dp) :: t0, t1, t_run
@@ -159,12 +161,13 @@ program tcrw_fig3f
 
    ! ---- outer loop over L ----
    do iL = 1, size(L_list)
-      L_cur  = L_list(iL)
+      L_paper = L_list(iL)
+      L_cur   = L_paper + 1                ! authors' convention: L=N ⇒ (N+1)×(N+1) sites
       n_edge = 4 * L_cur - 4
       n_bulk = (L_cur - 2) ** 2
 
-      print '(A,I3,A,I0,A,I0,A)', '  --- L = ', L_cur, &
-            '   (n_edge = ', n_edge, ', n_bulk = ', n_bulk, ') ---'
+      print '(A,I3,A,I0,A,I0,A,I0,A)', '  --- L = ', L_paper, &
+            ' (sites = ', L_cur, ';  n_edge = ', n_edge, ', n_bulk = ', n_bulk, ') ---'
       print '(A)', '       ω        P_edge_norm    P_bulk_norm        ratio       cpu[s]'
       print '(A)', '   --------   -------------  -------------  -------------  -----------'
 
@@ -181,7 +184,7 @@ program tcrw_fig3f
               omega_cur, P_edge_norm, P_bulk_norm, ratio, t_run
 
          write(u_sum, '(I3, 1X, F8.4, 1X, ES13.5, 1X, ES13.5, 1X, ES13.5, 1X, I8, 1X, I10)') &
-              L_cur, omega_cur, ratio, P_edge_norm, P_bulk_norm, n_edge, n_bulk
+              L_paper, omega_cur, ratio, P_edge_norm, P_bulk_norm, n_edge, n_bulk
       end do
       print '(A)', ''
    end do

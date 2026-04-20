@@ -41,10 +41,10 @@ ay = 0.40       # y-direction arrow scale (in site-index units; same as Fig 3c/d
 
 # ---- axes (linear ω; no log trick needed) ----
 set xrange [-0.03 : 1.03]
-set yrange [0.5 : 8.5]        # show interior sites y = 1..8 for L = 10
+set yrange [0.5 : 9.5]        # show interior sites y = 1..9 for L_paper=10 (11×11 grid)
 set xtics 0, 0.1, 1.0
 set mxtics 2
-set ytics 1, 1, 8
+set ytics 1, 1, 9
 set mytics 2
 set xlabel '{/Symbol w}'              font ',14'
 set ylabel 'left-edge site  y'        font ',14'

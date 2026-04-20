@@ -142,7 +142,11 @@ program tcrw_fig3hij
    integer, parameter :: i8 = selected_int_kind(18)
 
    ! ---- panel parameters ----
-   integer,  parameter :: L_cur     = 10
+   ! Authors' lattice convention: label L means (L+1)×(L+1) sites
+   ! (indices 0..L inclusive).  Paper's Fig 3 uses L = 10 ⇒ 11×11 grid.
+   ! We keep two variables: L_paper for output labels, L_cur for the sim.
+   integer,  parameter :: L_paper   = 10                  ! paper's legend label
+   integer,  parameter :: L_cur     = L_paper + 1         ! # sites per side (authors' convention)
    real(dp), parameter :: D_r_fixed = 1.0e-3_dp
    integer,  parameter :: n_omega   = 21
    real(dp), parameter :: omega_min = 0.0_dp
@@ -171,7 +175,7 @@ program tcrw_fig3hij
    call build_linear_grid(omega_values, n_omega, omega_min, omega_max)
 
    print '(A)',         '==== TCRW Fig 3(h)/(i)/(j): left-wall J_Dr, J_ω vs ω  (L = 10, D_r = 10^-3) ===='
-   print '(A,I0,A,ES11.4)', '  L = ', L_cur, '     D_r (fixed) = ', D_r_fixed
+   print '(A,I0,A,I0,A,ES11.4)', '  L = ', L_paper, ' (sites per side: ', L_cur, ')     D_r (fixed) = ', D_r_fixed
    print '(A,I12,A,I12)',   '  T_floor = ', T_floor, '   N_burn_floor = ', N_burn_floor
    print '(A,F6.1,A,F6.1,A)', &
         '  T_use      = max(T_floor,      ', K_meas, ' * max(L^2, 1/D_r)/D_r)    ' // &
@@ -190,13 +194,13 @@ program tcrw_fig3hij
    write(u_field, '(A,F6.1,A,F6.1,A)') &
         '# T_use = max(T_floor, ', K_meas, '*max(L^2,1/D_r)/D_r);  ' // &
         'N_burn_use = max(N_burn_floor, ', K_burn, '*max(L^2,1/D_r)/D_r)'
-   write(u_field, '(A,I0,A,ES11.4,A,I0)') '# L = ', L_cur, '   D_r = ', D_r_fixed, '   seed = ', seed
+   write(u_field, '(A,I0,A,I0,A,ES11.4,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   D_r = ', D_r_fixed, '   seed = ', seed
    write(u_field, '(A)') '# columns:  iW  ω  y  Jx_Dr  Jy_Dr  Jx_om  Jy_om  ' // &
                          '|J_Dr|  th_Dr  |J_om|  th_om'
 
    open(newunit=u_angle, file='tcrw_fig3j_summary.txt', status='replace', action='write')
    write(u_angle, '(A)') '# TCRW Fig 3(j): θ_JDr and θ_Jω of the TOTAL left-wall current  (L = 10, D_r = 10^-3)'
-   write(u_angle, '(A,I0,A,ES11.4,A,I0)') '# L = ', L_cur, '   D_r = ', D_r_fixed, '   seed = ', seed
+   write(u_angle, '(A,I0,A,I0,A,ES11.4,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   D_r = ', D_r_fixed, '   seed = ', seed
    write(u_angle, '(A)') '# columns:  iW  ω  Jx_Dr_tot  Jy_Dr_tot  Jx_om_tot  Jy_om_tot  ' // &
                          'th_Dr_tot  th_om_tot'
 
@@ -333,7 +337,7 @@ contains
       prev_noise = .false.
       do it = 1_i8, N_burn_use
          call tcrw_step_mask(x, y, d, mask, L_in, L_in, omega_in, D_r_in, step_type)
-         prev_noise = (step_type == 0)
+         if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
       end do
 
       ! ---- zero accumulators ----
@@ -357,7 +361,7 @@ contains
             end if
          end if
 
-         prev_noise = (step_type == 0)
+         if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
       end do
 
       deallocate(mask)

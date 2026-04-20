@@ -119,7 +119,7 @@ program tcrw_fig3g
 
    ! ---- Fig 3(g) parameters ----
    real(dp), parameter :: D_r_fixed = 1.0e-3_dp
-   integer,  parameter :: L_list(3) = (/ 10, 19, 49 /)
+   integer,  parameter :: L_list(3) = (/ 9, 19, 49 /)   ! paper Fig 3 legend (authors' convention); ⇒ 10×10, 20×20, 50×50 grids
    integer,  parameter :: n_omega   = 21
    real(dp), parameter :: omega_min = 0.0_dp
    real(dp), parameter :: omega_max = 1.0_dp
@@ -131,7 +131,9 @@ program tcrw_fig3g
 
    ! ---- locals ----
    integer     :: iL, iW, u_sum
-   integer     :: L_cur
+   ! Authors' lattice convention: label L means (L+1)×(L+1) sites (indices 0..L).
+   ! L_paper = paper legend label (written to output); L_cur = actual sites per side.
+   integer     :: L_paper, L_cur
    real(dp)    :: omega_cur, abs_JDr, abs_Jom, ratio
    real(dp)    :: omega_values(n_omega)
    real(dp)    :: t0, t1, t_run
@@ -168,9 +170,10 @@ program tcrw_fig3g
 
    ! ---- outer loop over L ----
    do iL = 1, size(L_list)
-      L_cur = L_list(iL)
+      L_paper = L_list(iL)
+      L_cur   = L_paper + 1                ! authors' convention: L=N ⇒ (N+1)×(N+1) sites
 
-      print '(A,I3,A)', '  --- L = ', L_cur, ' ---'
+      print '(A,I3,A,I0,A)', '  --- L = ', L_paper, ' (sites = ', L_cur, ') ---'
       print '(A)', '        ω         |J_Dr|_wall     |J_ω|_wall         ratio       sJyom  sJyDr   cpu[s]'
       print '(A)', '   ----------   -------------  -------------  -------------   -----  -----   -------'
 
@@ -189,7 +192,7 @@ program tcrw_fig3g
               sign_of(Jy_w_om), sign_of(Jy_w_Dr), t_run
 
          write(u_sum, '(I3, 1X, F8.4, 1X, ES13.5, 1X, ES13.5, 1X, ES13.5, 4(1X, I14))') &
-              L_cur, omega_cur, ratio, abs_JDr, abs_Jom, &
+              L_paper, omega_cur, ratio, abs_JDr, abs_Jom, &
               Jx_w_Dr, Jy_w_Dr, Jx_w_om, Jy_w_om
       end do
       print '(A)', ''
@@ -286,7 +289,7 @@ contains
       prev_noise = .false.
       do it = 1_i8, N_burn_use
          call tcrw_step_mask(x, y, d, mask, L_in, L_in, omega_in, D_r_in, step_type)
-         prev_noise = (step_type == 0)
+         if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
       end do
 
       ! ---- measurement ----
@@ -310,7 +313,7 @@ contains
             end if
          end if
 
-         prev_noise = (step_type == 0)
+         if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
       end do
 
       deallocate(mask)

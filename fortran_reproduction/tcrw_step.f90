@@ -121,12 +121,25 @@ end subroutine tcrw_step_obc
 ! The distinction between step_type 0 and 2 lets the caller maintain the
 ! "prev_was_noise" flag that drives the J = J_ω + J_Dr decomposition in
 ! Osat et al. Fig 2(c)-(e): a translation at step t is attributed to
-!   J_Dr  if prev step (t-1) was a noise step  (prev_was_noise = .true.)
-!   J_ω   otherwise                            (prev_was_noise = .false.)
-! A blocked chiral attempt DOES flip prev_was_noise to .false. — it's a
-! chiral attempt, not a noise event — so the next successful translation
-! after a blocked attempt is attributed to J_ω, matching the paper's
-! "otherwise it is part of J_ω" wording.
+!   J_Dr  if the last EFFECTIVE event was a noise step   (prev_was_noise = .true.)
+!   J_ω   if the last EFFECTIVE event was a chiral move  (prev_was_noise = .false.)
+!
+! "Effective" means non-blocked.  A blocked chiral attempt (step_type == 2)
+! does NOT reset prev_was_noise — the flag keeps whatever it was before
+! the blocked attempt.  Only step_type == 0 sets it to .true.; only
+! step_type == 1 sets it to .false.  This matches the reference Python
+! implementation (ChiralWalker.step in TRW._original_code_by_paperauthors.py),
+! which updates self.noise_step only inside the successful branches.
+! Physical intuition: while bouncing on a wall the walker is still in the
+! "just-scattered" regime; it has not performed a new chiral event yet.
+!
+! Caller loop pattern (required to reproduce the paper's J_Dr / J_ω curves):
+!     select case (step_type)
+!        case (0); prev_noise = .true.
+!        case (1); prev_noise = .false.
+!        case (2); continue                    ! blocked — leave flag alone
+!     end select
+! Equivalently:  if (step_type /= 2) prev_noise = (step_type == 0)
 !---------------------------------------------------------------------
 subroutine tcrw_step_mask(x, y, d, mask, Lx, Ly, omega, D_r, step_type)
    implicit none

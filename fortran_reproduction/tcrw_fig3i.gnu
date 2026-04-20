@@ -33,10 +33,10 @@ ay = 0.40
 
 # ---- axes ----
 set xrange [-0.03 : 1.03]
-set yrange [0.5 : 8.5]
+set yrange [0.5 : 9.5]        # interior sites y = 1..9 for L_paper=10 (11×11 grid)
 set xtics 0, 0.1, 1.0
 set mxtics 2
-set ytics 1, 1, 8
+set ytics 1, 1, 9
 set mytics 2
 set xlabel '{/Symbol w}'              font ',14'
 set ylabel 'left-edge site  y'        font ',14'
@@ -46,7 +46,7 @@ set border lw 1.0
 set title "TCRW Fig 3(i) — J_{/Symbol w}(y) on left wall  (L = 10, D_r = 10^{-3})"  font 'Helvetica,11'
 
 # visual guide at ω = 0.5 (achirality)
-set arrow from 0.5, 0.5 to 0.5, 8.5 nohead lc rgb '#bbbbbb' dt 2 lw 0.8 front
+set arrow from 0.5, 0.5 to 0.5, 9.5 nohead lc rgb '#bbbbbb' dt 2 lw 0.8 front
 
 # ---- colorbar for log|J_ω| ----
 set cblabel '|J_{/Symbol w}|'          font ',12'

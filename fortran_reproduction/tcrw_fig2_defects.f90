@@ -214,7 +214,7 @@ program tcrw_fig2_defects
          traj_y(int(it)) = y
       end if
 
-      prev_noise = (step_type == 0)
+      if (step_type /= 2) prev_noise = (step_type == 0)   ! authors' rule: blocked chiral leaves flag unchanged
 
       if (mod(it, prog_every) == 0_i8) then
          call cpu_time(t1)

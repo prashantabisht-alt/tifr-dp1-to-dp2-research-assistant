@@ -46,10 +46,10 @@ ay = 0.40       # y-direction arrow scale (site-index units)
 
 # ---- axes (log-x rendered via log10(D_r) on linear axis) ----
 set xrange [-4.3 : 0.3]
-set yrange [0.5 : 8.5]      # show interior sites y = 1..8 for L = 10
+set yrange [0.5 : 9.5]      # show interior sites y = 1..9 for L_paper=10 (11×11 grid, indices 0..10)
 set xtics ('10^{-4}' -4, '10^{-3}' -3, '10^{-2}' -2, '10^{-1}' -1, '10^{0}' 0)
 set mxtics 2
-set ytics 1, 1, 8
+set ytics 1, 1, 9
 set mytics 2
 set xlabel 'D_r'                       font ',14'
 set ylabel 'left-edge site  y'         font ',14'

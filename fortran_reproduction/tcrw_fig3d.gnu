@@ -35,10 +35,10 @@ ay = 0.40
 
 # ---- axes ----
 set xrange [-4.3 : 0.3]
-set yrange [0.5 : 8.5]
+set yrange [0.5 : 9.5]      # interior sites y = 1..9 for L_paper=10 (11×11 grid)
 set xtics ('10^{-4}' -4, '10^{-3}' -3, '10^{-2}' -2, '10^{-1}' -1, '10^{0}' 0)
 set mxtics 2
-set ytics 1, 1, 8
+set ytics 1, 1, 9
 set mytics 2
 set xlabel 'D_r'                       font ',14'
 set ylabel 'left-edge site  y'         font ',14'

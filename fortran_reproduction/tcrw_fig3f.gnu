@@ -27,7 +27,7 @@
 #
 # Notes
 # -----
-#   - Viridis ramp uses only 3 shades (L = 10, 19, 49), drawn from the
+#   - Viridis ramp uses only 3 shades (L = 9, 19, 49), drawn from the
 #     same palette as Fig 3(a) for visual continuity.
 #   - Reference line at r_ref = 700 is an estimate; if the Fig 3(a)
 #     summary file is present, one can read its D_r = 10^-3 row to
@@ -46,7 +46,7 @@ f = 'tcrw_fig3f_summary.txt'
 r_ref = 260.0
 
 # ---- styles:  3 L curves, viridis-like ramp ----
-set style line 1 lc rgb '#3b528b' pt 7  ps 1.0 lw 1.8    # L = 10  (blue)
+set style line 1 lc rgb '#3b528b' pt 7  ps 1.0 lw 1.8    # L = 9   (blue)
 set style line 2 lc rgb '#21918c' pt 5  ps 1.0 lw 1.8    # L = 19  (teal)
 set style line 3 lc rgb '#5ec962' pt 9  ps 1.0 lw 1.8    # L = 49  (green)
 set style line 99 lc rgb '#bbbbbb' dt 2 lw 0.8            # r_ref guide
@@ -81,7 +81,7 @@ set label sprintf("r_{ref} ≈ %.0f  (Fig 3a master curve at D_r = 10^{-3})", r_
 # ---- common plot command (shared across qt and pdf) ----
 # col 1 = L, col 2 = ω, col 3 = ratio
 plot_cmd = \
-  "'" . f . "' u ($1==10 ? $2 : 1/0):($1==10 ? $3 : 1/0) w lp ls 1 title 'L = 10', "  . \
+  "'" . f . "' u ($1==9 ? $2 : 1/0):($1==9 ? $3 : 1/0) w lp ls 1 title 'L = 9', "   . \
   "'" . f . "' u ($1==19 ? $2 : 1/0):($1==19 ? $3 : 1/0) w lp ls 2 title 'L = 19', "  . \
   "'" . f . "' u ($1==49 ? $2 : 1/0):($1==49 ? $3 : 1/0) w lp ls 3 title 'L = 49'"
 

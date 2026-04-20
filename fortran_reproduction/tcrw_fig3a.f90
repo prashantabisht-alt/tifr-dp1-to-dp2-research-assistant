@@ -140,7 +140,10 @@ program tcrw_fig3a
 
    ! ---- locals ----
    integer  :: iL, iD, u_sum
-   integer  :: L_cur, n_edge, n_bulk
+   ! Authors' lattice convention: label L means (L+1)×(L+1) sites (indices 0..L).
+   ! L_paper = paper legend label (written to output, used in plots);
+   ! L_cur   = actual sites per side = L_paper + 1 (used for sim + allocations).
+   integer  :: L_paper, L_cur, n_edge, n_bulk
    real(dp) :: D_r_cur, P_edge_norm, P_bulk_norm, ratio
    real(dp) :: D_r_values(n_Dr)
    real(dp) :: t0, t1, t_run
@@ -172,12 +175,13 @@ program tcrw_fig3a
 
    ! ---- outer loop over L ----
    do iL = 1, size(L_list)
-      L_cur  = L_list(iL)
+      L_paper = L_list(iL)
+      L_cur   = L_paper + 1                ! authors' convention: L=N ⇒ (N+1)×(N+1) sites
       n_edge = 4 * L_cur - 4
       n_bulk = (L_cur - 2) ** 2
 
-      print '(A,I3,A,I0,A,I0,A)', '  --- L = ', L_cur, &
-            '   (n_edge = ', n_edge, ', n_bulk = ', n_bulk, ') ---'
+      print '(A,I3,A,I0,A,I0,A,I0,A)', '  --- L = ', L_paper, &
+            ' (sites = ', L_cur, ';  n_edge = ', n_edge, ', n_bulk = ', n_bulk, ') ---'
       print '(A)', '       D_r        P_edge_norm    P_bulk_norm        ratio       cpu[s]'
       print '(A)', '   -----------  -------------  -------------  -------------  -----------'
 
@@ -194,7 +198,7 @@ program tcrw_fig3a
               D_r_cur, P_edge_norm, P_bulk_norm, ratio, t_run
 
          write(u_sum, '(I3, 1X, ES13.5, 1X, ES13.5, 1X, ES13.5, 1X, ES13.5, 1X, I8, 1X, I10)') &
-              L_cur, D_r_cur, ratio, P_edge_norm, P_bulk_norm, n_edge, n_bulk
+              L_paper, D_r_cur, ratio, P_edge_norm, P_bulk_norm, n_edge, n_bulk
       end do
       print '(A)', ''
    end do
