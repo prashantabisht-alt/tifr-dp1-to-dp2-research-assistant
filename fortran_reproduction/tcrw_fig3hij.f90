@@ -78,20 +78,26 @@
 !   L             = 10
 !   D_r           = 10^-3                        ! fixed
 !   ω grid        = 21 linearly-spaced pts  0.0 → 1.0
-!   T_floor       = 10^8
-!   N_burn_floor  = 10^7
-!   K_meas        = 100                          ! same as Fig 3(g)
-!   K_burn        = 10
+!   T_floor       = 3·10^8                       ! bumped from 10^8 for ω=0.5 cleanup
+!   N_burn_floor  = 3·10^7                       ! bumped from 10^7
+!   K_meas        = 300                          ! bumped from 100 (2026-04-20)
+!   K_burn        = 30                           ! bumped from 10
 !   seed          = 20260424                     ! distinct from fig3cde
 !
-! Cost
-! ----
+! Cost  (updated for bumped parameters)
+! -------------------------------------
 !   D_r = 10^-3  →  τ_bulk = L²/D_r = 10^5,  τ_wall = 1/D_r² = 10^6,
 !                   τ_relax = 10^6.
-!   T_use  = max(10^8, 100·10^6) = 10^8 steps / ω-point.
-!   N_burn = max(10^7,  10·10^6) = 10^7 steps / ω-point.
-!   Total: 21 × (10^7 + 10^8) ≈ 2.3 × 10^9 RNG-driven steps.  On a
-!   modern Mac (~40–60 M steps/s) that's roughly 45–60 s.
+!   T_use  = max(3·10^8, 300·10^6) = 3·10^8 steps / ω-point.
+!   N_burn = max(3·10^7,  30·10^6) = 3·10^7 steps / ω-point.
+!   Total: 21 × (3·10^7 + 3·10^8) ≈ 7 × 10^9 RNG-driven steps.  On a
+!   modern Mac (~40–60 M steps/s) that's roughly 2–3 min.
+!
+!   Why the bump?  Original run showed ω = 0.5 column arrows still
+!   tilted slightly DOWN in Fig 3(h) (should be ≈ →, since Jy → 0 by
+!   symmetry and only noise-scatter Jx survives).  3× more statistics
+!   shrinks the residual Jy sample noise enough that atan2(Jy, Jx)
+!   lands closer to 0.
 !
 ! Current decomposition (same rule as Fig 2, Fig 3(b), Fig 3(c/d/e/g))
 ! --------------------------------------------------------------------
@@ -141,10 +147,10 @@ program tcrw_fig3hij
    integer,  parameter :: n_omega   = 21
    real(dp), parameter :: omega_min = 0.0_dp
    real(dp), parameter :: omega_max = 1.0_dp
-   integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8
-   integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7
-   real(dp),    parameter :: K_meas       = 100.0_dp
-   real(dp),    parameter :: K_burn       =  10.0_dp
+   integer(i8), parameter :: T_floor      = 300000000_i8   ! 3·10^8  (bumped from 10^8)
+   integer(i8), parameter :: N_burn_floor =  30000000_i8   ! 3·10^7  (bumped from 10^7)
+   real(dp),    parameter :: K_meas       = 300.0_dp       ! bumped 100 → 300 for ω=0.5 column cleanup
+   real(dp),    parameter :: K_burn       =  30.0_dp       ! bumped  10 →  30
    integer,     parameter :: seed         = 20260424
 
    ! ---- locals ----

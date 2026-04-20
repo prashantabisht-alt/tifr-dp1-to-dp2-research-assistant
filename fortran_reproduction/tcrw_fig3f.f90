@@ -43,11 +43,20 @@
 !   D_r           = 10^-3                      ! fixed (paper Fig 3f)
 !   L grid        = (10, 19, 49)               ! paper subset
 !   ω grid        = 21 linearly-spaced pts  0.0 → 1.0
-!   T_floor       = 10^8                       ! minimum measurement length
-!   N_burn_floor  = 10^7                       ! minimum discarded burn-in
-!   K_meas        = 100                        ! T_use  = max(T_floor, K_meas · τ_relax)
-!   K_burn        = 10                         ! N_burn = max(N_burn_floor, K_burn · τ_relax)
+!   T_floor       = 3·10^8                     ! bumped from 10^8 for ω∈{0,1} cleanup
+!   N_burn_floor  = 3·10^7                     ! bumped from 10^7
+!   K_meas        = 300                        ! bumped from 100 (2026-04-20)
+!   K_burn        = 30                         ! bumped from 10
 !   seed          = 20260420                   ! distinct from Fig 3(a)'s 20260419
+!
+!   Why the bump?  Original run left ω = 0 (L=19) and ω = 1 (L=10) as
+!   visible outliers (ratio ~ 450 vs plateau ~ 260).  Root cause: at
+!   ω ∈ {0, 1} the noise step is a deterministic 90° rotation — the
+!   director cycles {↑→↓←} (or reverse) exactly every 4 steps.  This
+!   kills Markov-chain randomness for the angular coordinate, so the
+!   lattice-position mixing has to come purely from chiral-move
+!   scatter.  That's much slower than generic ω, so we throw 3× more
+!   steps at it and 3× longer burn-in.
 !
 ! Why adaptive T and burn-in?
 ! ---------------------------
@@ -107,10 +116,10 @@ program tcrw_fig3f
    integer,  parameter :: n_omega   = 21
    real(dp), parameter :: omega_min = 0.0_dp
    real(dp), parameter :: omega_max = 1.0_dp
-   integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8
-   integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7
-   real(dp),    parameter :: K_meas       = 100.0_dp
-   real(dp),    parameter :: K_burn       =  10.0_dp
+   integer(i8), parameter :: T_floor      = 300000000_i8   ! 3·10^8  (bumped from 10^8)
+   integer(i8), parameter :: N_burn_floor =  30000000_i8   ! 3·10^7  (bumped from 10^7)
+   real(dp),    parameter :: K_meas       = 300.0_dp       ! bumped 100 → 300 for ω∈{0,1} cleanup
+   real(dp),    parameter :: K_burn       =  30.0_dp       ! bumped  10 →  30
    integer,     parameter :: seed         = 20260420
 
    ! ---- locals ----

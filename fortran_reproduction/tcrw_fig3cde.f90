@@ -49,16 +49,16 @@
 !   D_r grid      = 25 log-spaced pts  10^-4 → 10^0  (match Fig 3a,b)
 !   T_floor       = 10^8
 !   N_burn_floor  = 10^7
-!   K_meas        = 30                         ! reduced vs Fig 3(b)
-!   K_burn        = 5
+!   K_meas        = 120                        ! bumped from 30 (2026-04-20) to clean up 3(d) small-D_r cells
+!   K_burn        = 20                         ! bumped from 5 for longer equilibration at small D_r
 !   seed          = 20260423
 !
-!   Why K_meas = 30 instead of 100?  Fig 3(c)/(d) are QUIVER plots —
-!   we need directions and relative magnitudes to be right, not
-!   per-site magnitudes to 1% accuracy.  At small D_r the per-cell
-!   budget is 30 · 10^8 = 3 · 10^9 steps; summed over L = 10 wall
-!   sites and averaged, that's plenty of SNR for the arrow pattern.
-!   Total cost ≈ 15–20 min on a modern Mac.
+!   Why K_meas = 120?  Original run (K_meas = 30) left 3(d) visibly
+!   scattered for D_r ≲ 10^-3 (arrows at adjacent y-sites pointed
+!   in unrelated directions because the per-cell J_ω event count was
+!   too low).  Bumping to K_meas = 120 gives 4× more statistics per
+!   cell → noise floor down by factor 2 in each (θ, |J|) estimate.
+!   Trade-off: runtime goes from ~20 min to ~80 min on a modern Mac.
 !
 ! Current decomposition (same rule as Fig 2, Fig 3(b), Fig 3(g))
 ! --------------------------------------------------------------
@@ -106,8 +106,8 @@ program tcrw_fig3cde
    real(dp), parameter :: log_Dr_max =  0.0_dp
    integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8
    integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7
-   real(dp),    parameter :: K_meas       = 30.0_dp
-   real(dp),    parameter :: K_burn       =  5.0_dp
+   real(dp),    parameter :: K_meas       = 120.0_dp       ! bumped 30 → 120 for 3(d) small-D_r cleanup
+   real(dp),    parameter :: K_burn       =  20.0_dp       ! bumped  5 →  20
    integer,     parameter :: seed         = 20260423
 
    ! ---- locals ----
