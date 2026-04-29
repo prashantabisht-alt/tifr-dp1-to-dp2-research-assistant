@@ -219,8 +219,11 @@ def make_figure(omega_list=(0.5, 0.7, 1.0), D_r: float = 0.1, L: int = 10,
         cms        = (cmap_bulk,      cmap_ccw,      cmap_to_edge)
         for r in range(nrow):
             ax = axes[r, c]
-            ax.scatter(sx, cy, z, c=wts_by_row[r], cmap=cms[r],
-                       vmin=0, vmax=1, s=2.5, alpha=0.9, edgecolors="none")
+            # Render order: high weight last so the bright (interesting)
+            # points sit on top and aren't overdrawn by darker bulk points.
+            o = np.argsort(wts_by_row[r])
+            ax.scatter(sx[o], cy[o], z[o], c=wts_by_row[r][o], cmap=cms[r],
+                       vmin=0, vmax=1, s=2.5, alpha=0.95, edgecolors="none")
             ax.set_xlim(-1.05, 1.05); ax.set_ylim(-1.05, 1.05); ax.set_zlim(-1.05, 1.05)
             ax.set_xticks([-1, 0, 1]); ax.set_yticks([-1, 0, 1]); ax.set_zticks([-1, 0, 1])
             if r == nrow - 1:

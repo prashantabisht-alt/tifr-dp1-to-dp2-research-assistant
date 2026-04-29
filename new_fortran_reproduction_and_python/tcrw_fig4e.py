@@ -232,10 +232,14 @@ def make_figure(D_r: float = 0.1, L: int = 10, N_w: int = 300,
     y_re  = evals.real.ravel()
     c_all = wts.ravel()
 
+    # Render order: low-weight (dark) points first, high-weight (red) on top
+    order = np.argsort(c_all)
+    w_rep, y_re, c_all = w_rep[order], y_re[order], c_all[order]
+
     fig, ax = plt.subplots(figsize=(7.5, 5.2))
     cmap = plt.cm.turbo
     sc = ax.scatter(w_rep, y_re, c=c_all, cmap=cmap, vmin=0.0, vmax=1.0,
-                    s=3, alpha=0.75, edgecolors="none")
+                    s=3, alpha=0.9, edgecolors="none")
 
     ax.set_xlabel(r"$\omega$")
     ax.set_ylabel(r"$\mathrm{Re}(\lambda)$")

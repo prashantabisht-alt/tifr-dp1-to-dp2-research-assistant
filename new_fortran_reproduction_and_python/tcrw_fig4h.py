@@ -219,14 +219,25 @@ def make_figure(omega: float = 1.0, D_r: float = 0.1, L: int = 10,
     im_flat = evals.imag.ravel()
     w_flat  = wts.ravel()
 
+    # IMPORTANT — render order matters with alpha < 1.  Sort by edge weight
+    # ASCENDING so that high-edge (red) points are drawn LAST (on top).
+    # Without this, bulk (dark, low edge) points painted over the bright
+    # edge points and the red hotspots near k_y = 0 were hidden.  Bug
+    # found 2026-04-24 by direct probe of band edge_weights.
+    order = np.argsort(w_flat)
+    k_rep   = k_rep[order]
+    re_flat = re_flat[order]
+    im_flat = im_flat[order]
+    w_flat  = w_flat[order]
+
     fig, (ax_re, ax_im) = plt.subplots(2, 1, figsize=(6.5, 7),
                                         sharex=True, gridspec_kw=dict(hspace=0.15))
     cmap = plt.cm.turbo
 
     sc_r = ax_re.scatter(k_rep, re_flat, c=w_flat, cmap=cmap,
-                         vmin=0, vmax=1, s=4, alpha=0.85, edgecolors="none")
+                         vmin=0, vmax=1, s=4, alpha=0.95, edgecolors="none")
     ax_im.scatter(k_rep, im_flat, c=w_flat, cmap=cmap,
-                   vmin=0, vmax=1, s=4, alpha=0.85, edgecolors="none")
+                   vmin=0, vmax=1, s=4, alpha=0.95, edgecolors="none")
 
     for ax, ylab in [(ax_re, r"$\mathrm{Re}(\lambda)$"),
                      (ax_im, r"$\mathrm{Im}(\lambda)$")]:
