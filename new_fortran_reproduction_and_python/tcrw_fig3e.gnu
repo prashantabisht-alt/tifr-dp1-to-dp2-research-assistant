@@ -55,9 +55,12 @@ set arrow from 5e-5, -1.5708 to 2.0, -1.5708 nohead ls 99
 set arrow from 5e-5,  0.7854 to 2.0,  0.7854 nohead ls 99
 
 # ---- plot command ----
+# After fig3cde rerun: angles file now has full-wall θ in cols 7-8 AND
+# interior-only θ (paper convention) in cols 13-14.  We use the interior
+# columns to avoid corner-Jx contamination that smooths the sharp jump.
 plot_cmd = \
-  "'" . f . "' u 2:7 w lp ls 1 title 'θ_{J_{D_r}}', " . \
-  "'" . f . "' u 2:8 w lp ls 2 title 'θ_{J_{/Symbol w}}  (ref: +π/4)'"
+  "'" . f . "' u 2:13 w lp ls 1 title 'θ_{J_{D_r}}', " . \
+  "'" . f . "' u 2:14 w lp ls 2 title 'θ_{J_{/Symbol w}}  (ref: +π/4)'"
 
 #=====================================================================
 # PDF  (runs FIRST)

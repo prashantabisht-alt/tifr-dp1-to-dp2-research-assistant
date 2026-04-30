@@ -1,12 +1,12 @@
 #=====================================================================
 # tcrw_fig2_defects_traj.gnu — Fig 2 row (l): 3D rainbow trajectory
-#                               with internal plus-sign defect,
+#                               with internal L-shape defect,
 #                               side-by-side with clean box at ω = 0.
 #
 # Two panels (ω = 0.0 for both):
 #   left  : CLEAN box       — helical ribbon hugging outer edge only
 #   right : DEFECTS box     — helical ribbon circulates AROUND the
-#                             interior plus-sign as well; the defect
+#                             interior L-shape as well; the defect
 #                             carves a visible hole in the path
 #                             (walker never visits those 5 cells).
 #
@@ -19,7 +19,7 @@
 #
 # On the defects panel, we stamp a column of filled dark squares at the
 # base (z = 0) of each defect cell.  Combined with the hole punched in
-# the ribbon itself, this makes the plus-sign geometry unambiguous.
+# the ribbon itself, this makes the L-shape geometry unambiguous.
 #
 # Reads :
 #   tcrw_fig2_traj_w0.0.txt         (clean, from tcrw_fig2_clean)
@@ -66,7 +66,8 @@ set view equal xy
 set ticslevel 0
 unset grid
 
-every_step = 50
+every_step = 1     # plot every walker step → true rectilinear path
+                   # (paper-faithful; bump to 5 for faster qt rendering).
 
 traj_clean   = "'" . f_clean   . "' every " . sprintf("%d", every_step) \
              . " u 2:3:(log10($1)) with lines lw 0.6 lc palette notitle"
@@ -82,13 +83,13 @@ if (mode eq "pdf" || mode eq "both") {
     set output 'tcrw_fig2_defects_traj.pdf'
 
     set multiplot layout 1,2 title \
-        "TCRW Fig 2 trajectory (first 10^6 steps, lifted by log_{10} t): clean vs plus-sign defect   |   ω = 0.0,  D_r = 10^{-3}" \
+        "TCRW Fig 2 trajectory (first 10^6 steps, lifted by log_{10} t): clean vs L-shape defect   |   ω = 0.0,  D_r = 10^{-3}" \
         font 'Helvetica,11'
 
     set title "clean box" font 'Helvetica,11'
     eval("splot " . traj_clean)
 
-    set title "plus-sign defect at (4, 5)" font 'Helvetica,11'
+    set title "L-shape defect (paper Fig 2k)" font 'Helvetica,11'
     eval("splot " . traj_defects)
 
     unset multiplot
@@ -103,13 +104,13 @@ if (mode eq "qt" || mode eq "both") {
     set terminal qt size 1200,600 enhanced font 'Helvetica,11'
 
     set multiplot layout 1,2 title \
-        "TCRW Fig 2 trajectory (first 10^6 steps, lifted by log_{10} t): clean vs plus-sign defect" \
+        "TCRW Fig 2 trajectory (first 10^6 steps, lifted by log_{10} t): clean vs L-shape defect" \
         font 'Helvetica,11'
 
     set title "clean box"
     eval("splot " . traj_clean)
 
-    set title "plus-sign defect at (4, 5)"
+    set title "L-shape defect (paper Fig 2k)"
     eval("splot " . traj_defects)
 
     unset multiplot

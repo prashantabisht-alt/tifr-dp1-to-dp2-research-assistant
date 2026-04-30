@@ -41,15 +41,21 @@ if (!exists("mode")) mode = "both"
 f = 'tcrw_fig3cde_summary.txt'
 
 # ---- arrow geometry  (tuned for 14 cm × 9 cm panel, L = 10) ----
-ax = 0.20       # x-direction arrow scale (decade fractions)
-ay = 0.40       # y-direction arrow scale (site-index units)
+ax = 0.20       # max x-direction arrow scale (decade fractions)
+ay = 0.40       # max y-direction arrow scale (site-index units)
+
+# ---- arrow length scaling (Python exact reference) ----
+# Fig 3(c) is an orientation plot: all nonzero arrows have fixed length;
+# magnitude is encoded by colour only.
+s_floor   = 0.05
+slen(J) = (J > 0 ? 1.0 : s_floor)
 
 # ---- axes (log-x rendered via log10(D_r) on linear axis) ----
 set xrange [-4.3 : 0.3]
-set yrange [0.5 : 9.5]      # show interior sites y = 1..9 for L_paper=10 (11×11 grid, indices 0..10)
+set yrange [0.5 : 8.5]      # paper shows y = 1..8 (skip y=9 corner-adjacent)
 set xtics ('10^{-4}' -4, '10^{-3}' -3, '10^{-2}' -2, '10^{-1}' -1, '10^{0}' 0)
 set mxtics 2
-set ytics 1, 1, 9
+set ytics 1, 1, 8
 set mytics 2
 set xlabel 'D_r'                       font ',14'
 set ylabel 'left-edge site  y'         font ',14'
@@ -58,25 +64,29 @@ set grid front lc rgb '#dddddd' lw 0.4
 set border lw 1.0
 set title "TCRW Fig 3(c) — J_{D_r}(y) on left wall  (L = 10, ω = 1)"  font 'Helvetica,11'
 
-# ---- colorbar for log|J_Dr| ----
-set cblabel '|J_{D_r}|'                font ',12'
-set logscale cb
-set cbrange [1e1 : 1e6]        # per-site counts of post-noise wall departures
+# ---- colorbar for log10|J_Dr| (Python exact reference) ----
+set cblabel 'log_{10}|J_{D_r}|'        font ',12'
+unset logscale cb
+set cbrange [-5 : -3]
+set format cb "%g"
 set palette defined ( \
-   0 '#440154', \
-   1 '#3b528b', \
-   2 '#21918c', \
-   3 '#5ec962', \
-   4 '#fde725' )              # viridis, matches other Fig 3 panels
+   0.000 '#053061', \
+   0.125 '#2166ac', \
+   0.250 '#4393c3', \
+   0.375 '#92c5de', \
+   0.500 '#f7f7f7', \
+   0.625 '#f4a582', \
+   0.750 '#d6604d', \
+   0.875 '#b2182b', \
+   1.000 '#67001f' )          # RdBu_r-like, matches Python exact
 
 # ---- plot command ----
-# col 2 = D_r, col 3 = y, col 8 = |J_Dr|, col 9 = θ_Dr (radians)
-# center-tail arrows: start at (log10(D_r) - 0.5·dx,  y - 0.5·dy),
-#                     delta = (dx, dy)     with dx = ax·cos θ,  dy = ay·sin θ
+# After fig3cde rerun, col 13 = |J_Dr|/T_use and col 9 = θ_Dr.
+# Length is fixed for nonzero arrows; color is log10(col 13).
 plot_cmd = \
-  "'" . f . "' u (log10($2) - 0.5*ax*cos($9)):($3 - 0.5*ay*sin($9))" . \
-               ":(ax*cos($9)):(ay*sin($9)):8 " . \
-               "w vectors head filled size 0.08,20 lw 1.6 lc palette " . \
+  "'" . f . "' u (log10($2) - 0.5*ax*slen($13)*cos($9)):($3 - 0.5*ay*slen($13)*sin($9))" . \
+               ":(ax*slen($13)*cos($9)):(ay*slen($13)*sin($9)):(log10($13)) " . \
+               "w vectors head filled size 0.06,20 lw 1.6 lc palette " . \
                "title ''"
 
 #=====================================================================

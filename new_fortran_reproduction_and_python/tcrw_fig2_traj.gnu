@@ -65,10 +65,12 @@ set ticslevel 0
 unset grid
 
 # subsample factor — was 1, bumped to 50 so individual helical turns at
-# high t become visually resolvable.  10^6 segments / 50 = 20,000 plotted
-# points per panel; enough density for the high-t band but thin enough
-# that the CCW/CW handedness is clearly visible in 3D.
-every_step = 50
+# high t become visually resolvable.
+# every_step = 1 plots every walker step → TRUE rectilinear path with
+# only horizontal/vertical segments (paper-faithful).  qt may lag ~10 s
+# with 3 × 10^6 line segments; PDF render is fine.  Bump to 5 or 10 if
+# you need interactive speed and accept some diagonal smoothing.
+every_step = 1
 
 plot_0 = "'" . f0 . "' every " . sprintf("%d", every_step) . " u 2:3:(log10($1)) with lines lw 0.6 lc palette notitle"
 plot_5 = "'" . f5 . "' every " . sprintf("%d", every_step) . " u 2:3:(log10($1)) with lines lw 0.6 lc palette notitle"

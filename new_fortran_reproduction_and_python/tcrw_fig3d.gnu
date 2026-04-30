@@ -33,12 +33,18 @@ f = 'tcrw_fig3cde_summary.txt'
 ax = 0.20
 ay = 0.40
 
+# ---- arrow length scaling (Python exact reference) ----
+# Fig 3(d) is an orientation plot: all nonzero arrows have fixed length;
+# magnitude is encoded by colour only.
+s_floor   = 0.05
+slen(J) = (J > 0 ? 1.0 : s_floor)
+
 # ---- axes ----
 set xrange [-4.3 : 0.3]
-set yrange [0.5 : 9.5]      # interior sites y = 1..9 for L_paper=10 (11×11 grid)
+set yrange [0.5 : 8.5]      # paper convention: y = 1..8 (skip y=9)
 set xtics ('10^{-4}' -4, '10^{-3}' -3, '10^{-2}' -2, '10^{-1}' -1, '10^{0}' 0)
 set mxtics 2
-set ytics 1, 1, 9
+set ytics 1, 1, 8
 set mytics 2
 set xlabel 'D_r'                       font ',14'
 set ylabel 'left-edge site  y'         font ',14'
@@ -47,22 +53,29 @@ set grid front lc rgb '#dddddd' lw 0.4
 set border lw 1.0
 set title "TCRW Fig 3(d) — J_{/Symbol w}(y) on left wall  (L = 10, ω = 1)"  font 'Helvetica,11'
 
-# ---- colorbar for log|J_ω| ----
-set cblabel '|J_{/Symbol w}|'          font ',12'
-set logscale cb
-set cbrange [1e1 : 1e6]
+# ---- colorbar for log10|J_ω| (Python exact reference) ----
+set cblabel 'log_{10}|J_{/Symbol w}|'  font ',12'
+unset logscale cb
+set cbrange [-5 : -3]
+set format cb "%g"
 set palette defined ( \
-   0 '#440154', \
-   1 '#3b528b', \
-   2 '#21918c', \
-   3 '#5ec962', \
-   4 '#fde725' )
+   0.000 '#053061', \
+   0.125 '#2166ac', \
+   0.250 '#4393c3', \
+   0.375 '#92c5de', \
+   0.500 '#f7f7f7', \
+   0.625 '#f4a582', \
+   0.750 '#d6604d', \
+   0.875 '#b2182b', \
+   1.000 '#67001f' )
 
-# ---- plot command (col 10 = |J_ω|, col 11 = θ_ω) ----
+# ---- plot command ----
+# After fig3cde rerun: col 14 = |J_om|/T_use, col 11 = θ_ω.
+# Length is fixed for nonzero arrows; color is log10(col 14).
 plot_cmd = \
-  "'" . f . "' u (log10($2) - 0.5*ax*cos($11)):($3 - 0.5*ay*sin($11))" . \
-               ":(ax*cos($11)):(ay*sin($11)):10 " . \
-               "w vectors head filled size 0.08,20 lw 1.6 lc palette " . \
+  "'" . f . "' u (log10($2) - 0.5*ax*slen($14)*cos($11)):($3 - 0.5*ay*slen($14)*sin($11))" . \
+               ":(ax*slen($14)*cos($11)):(ay*slen($14)*sin($11)):(log10($14)) " . \
+               "w vectors head filled size 0.06,20 lw 1.6 lc palette " . \
                "title ''"
 
 #=====================================================================

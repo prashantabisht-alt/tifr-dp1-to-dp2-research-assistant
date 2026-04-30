@@ -53,10 +53,19 @@ Jom1  = 'tcrw_fig2_Jomega_w1.0.txt'
 Jdr1  = 'tcrw_fig2_JDr_w1.0.txt'
 
 # ---- vector plot settings shared by all nine panels ----
-arrow_len = 0.45                        # lattice units; keeps arrows < half a cell
+arrow_len    = 0.45                     # lattice units; keeps arrows < half a cell
+mag_thresh   = 5e-6                     # MC-noise-aware threshold: at T = 10^10
+                                        # the bulk noise floor is ~10^-6 to 10^-5.5
+                                        # per cell (1/sqrt(T·P_bulk)).  Edge signal
+                                        # is ~3e-5.  Set threshold halfway between
+                                        # so bulk noise hides cleanly while edge
+                                        # arrows stay visible.  If you ever bump
+                                        # T to 10^11, drop this to 1e-6.
 
 # One-line sprintf (no backslash-inside-string — avoids parser version quirks).
-vec_expr(f) = sprintf("'%s' u ($3*$3+$4*$4 > 1e-30 ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle", f, arrow_len, arrow_len)
+# Filter: only plot row when sqrt(Jx^2 + Jy^2) > mag_thresh; otherwise NaN
+# tells gnuplot to skip the data point entirely (no arrow).
+vec_expr(f) = sprintf("'%s' u (sqrt($3*$3+$4*$4) > %g ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle", f, mag_thresh, arrow_len, arrow_len)
 
 # ---- palette ----
 set palette defined (0 '#fff4d6', 0.3 '#fab66a', 0.7 '#c0381a', 1 '#3d0a00')

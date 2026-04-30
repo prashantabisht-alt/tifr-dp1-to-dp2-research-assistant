@@ -1,0 +1,67 @@
+==== TCRW Fig 2 (clean OBC box, paper L=10) ====
+  grid: 10 x 10  (full L x L playground, no wall ring)
+  T_steps =    10000000000   D_r =  1.00E-03   seed = 20260418
+  first 1000000 steps saved as trajectory
+
+--- ω = 0.00 ---
+    progress   10 %   cpu =     13.1 s
+    progress   20 %   cpu =     26.0 s
+    progress   30 %   cpu =     38.6 s
+    progress   40 %   cpu =     51.3 s
+    progress   50 %   cpu =     64.1 s
+    progress   60 %   cpu =     77.4 s
+    progress   70 %   cpu =     90.7 s
+    progress   80 %   cpu =    103.5 s
+    progress   90 %   cpu =    116.1 s
+    progress  100 %   cpu =    129.0 s
+    loop done    cpu =    129.0 s
+    wrote tcrw_fig2_occ_w0.0.txt
+    wrote tcrw_fig2_traj_w0.0.txt
+    wrote tcrw_fig2_Jtot_w0.0.txt
+    wrote tcrw_fig2_Jomega_w0.0.txt
+    wrote tcrw_fig2_JDr_w0.0.txt
+    <P>_edge =   2.760E-02   <P>_bulk =   9.953E-05   ratio =  277.32
+
+--- ω = 0.50 ---
+    progress   10 %   cpu =     12.7 s
+    progress   20 %   cpu =     25.8 s
+    progress   30 %   cpu =     41.7 s
+    progress   40 %   cpu =     56.1 s
+    progress   50 %   cpu =     72.4 s
+    progress   60 %   cpu =     85.1 s
+    progress   70 %   cpu =     97.5 s
+    progress   80 %   cpu =    109.7 s
+    progress   90 %   cpu =    122.2 s
+    progress  100 %   cpu =    134.5 s
+    loop done    cpu =    134.5 s
+    wrote tcrw_fig2_occ_w0.5.txt
+    wrote tcrw_fig2_traj_w0.5.txt
+    wrote tcrw_fig2_Jtot_w0.5.txt
+    wrote tcrw_fig2_Jomega_w0.5.txt
+    wrote tcrw_fig2_JDr_w0.5.txt
+    <P>_edge =   2.760E-02   <P>_bulk =   9.914E-05   ratio =  278.40
+
+--- ω = 1.00 ---
+    progress   10 %   cpu =     12.4 s
+    progress   20 %   cpu =     25.0 s
+    progress   30 %   cpu =     37.3 s
+    progress   40 %   cpu =     49.9 s
+    progress   50 %   cpu =     62.3 s
+    progress   60 %   cpu =     74.5 s
+    progress   70 %   cpu =     86.8 s
+    progress   80 %   cpu =     99.5 s
+    progress   90 %   cpu =    112.4 s
+    progress  100 %   cpu =    124.7 s
+    loop done    cpu =    124.7 s
+    wrote tcrw_fig2_occ_w1.0.txt
+    wrote tcrw_fig2_traj_w1.0.txt
+    wrote tcrw_fig2_Jtot_w1.0.txt
+    wrote tcrw_fig2_Jomega_w1.0.txt
+    wrote tcrw_fig2_JDr_w1.0.txt
+    <P>_edge =   2.760E-02   <P>_bulk =   9.842E-05   ratio =  280.46
+
+Fig 2 clean-box: wrote 10 output files (5 per ω).
+Plot with:
+  bash run.sh tcrw-plot-fig2-occ        # P(X,Y) heatmaps
+  bash run.sh tcrw-plot-fig2-traj       # rainbow trajectories
+  bash run.sh tcrw-plot-fig2-currents   # 2x3 vector fields

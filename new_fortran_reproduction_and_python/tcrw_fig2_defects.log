@@ -1,0 +1,44 @@
+==== TCRW Fig 2 defects (L-shape, paper Fig 2(k)) ====
+  grid: 10 x 10  allowed sites = 93  (full L x L minus 7 defect cells)
+  T_steps =    10000000000   D_r =  1.00E-03   ω = 0.00
+  first 1000000 steps saved as trajectory
+  defect cells (x, y):
+    (3, 3)
+    (3, 4)
+    (3, 5)
+    (3, 6)
+    (4, 3)
+    (5, 3)
+    (6, 3)
+
+    wrote tcrw_fig2_defects_layout.txt
+Initial state: (x, y, d) = (2, 2, 1)
+
+    progress   10 %   cpu =     13.2 s
+    progress   20 %   cpu =     26.1 s
+    progress   30 %   cpu =     38.8 s
+    progress   40 %   cpu =     51.6 s
+    progress   50 %   cpu =     64.5 s
+    progress   60 %   cpu =     77.9 s
+    progress   70 %   cpu =     91.2 s
+    progress   80 %   cpu =    104.0 s
+    progress   90 %   cpu =    116.7 s
+    progress  100 %   cpu =    129.8 s
+    loop done    cpu =    129.8 s
+    wrote tcrw_fig2_occ_defects.txt
+    wrote tcrw_fig2_traj_defects.txt
+    wrote tcrw_fig2_Jtot_defects.txt
+    wrote tcrw_fig2_Jomega_defects.txt
+    wrote tcrw_fig2_JDr_defects.txt
+
+  <P>_outer_edge  (n= 36) =   1.987E-02
+  <P>_defect_ring (n= 15) =   1.878E-02
+  <P>_bulk        (n= 42) =   7.143E-05
+  outer/bulk       ratio =  278.21
+  defect_ring/bulk ratio =  262.88
+
+Fig 2 defects: wrote 6 output files (5 data + 1 layout).
+Plot with:
+  bash run.sh tcrw-plot-fig2-defects-occ
+  bash run.sh tcrw-plot-fig2-defects-traj
+  bash run.sh tcrw-plot-fig2-defects-currents

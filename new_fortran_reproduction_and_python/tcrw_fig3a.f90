@@ -122,7 +122,12 @@ program tcrw_fig3a
    integer,  parameter :: L_list(4) = (/ 4, 9, 19, 49 /)
    integer,  parameter :: n_Dr   = 25
    real(dp), parameter :: log_Dr_min = -4.0_dp
-   real(dp), parameter :: log_Dr_max =  0.0_dp
+   real(dp), parameter :: log_Dr_max = -0.01_dp   ! stop at D_r ≈ 0.977 ;
+                                                   ! at D_r = 1 the walker
+                                                   ! never translates and
+                                                   ! the Perron eigenspace
+                                                   ! at λ = 1 is degenerate
+                                                   ! (steady state non-unique).
    integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8  (floor for T_steps)
    integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7  (floor for burn-in)
    real(dp),    parameter :: K_meas       = 100.0_dp       ! measurement = K_meas × τ_relax

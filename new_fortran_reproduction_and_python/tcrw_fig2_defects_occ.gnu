@@ -1,12 +1,12 @@
 #=====================================================================
 # tcrw_fig2_defects_occ.gnu — Fig 2 row (k): P(X,Y) with internal
-#                              plus-sign defect, compared side-by-side
+#                              L-shape defect, compared side-by-side
 #                              with the clean box at the same ω.
 #
 # Two panels (ω = 0.0 for both):
 #   left  : CLEAN box        — single localization ring along outer edge
 #   right : DEFECTS box      — outer edge ring  +  SECOND localization
-#                              ring around the interior plus-sign defect
+#                              ring around the interior L-shape defect
 #
 # Physics:
 #   The noise (D_r) rotates without translating, and does so at every
@@ -21,7 +21,7 @@
 #
 # The defect cells themselves show up as blank squares (P = 0, filtered
 # to NaN) and are additionally overlaid with dark grey filled squares
-# from tcrw_fig2_defects_layout.txt so the plus-sign shape is obvious.
+# from tcrw_fig2_defects_layout.txt so the L-shape shape is obvious.
 #
 # Reads :
 #   tcrw_fig2_occ_w0.0.txt          (clean  ω=0, from tcrw_fig2_clean)
@@ -58,14 +58,13 @@ set xlabel 'X'
 set ylabel 'Y'
 unset grid
 
-# NaN filter: walls AND defect cells (P=0) rendered blank.
-# Second 'plot' layer uses boxxyerror (x:y:xdelta:ydelta) to draw a FILLED
-# CELL-SIZED dark grey square on each defect cell — so the plus-sign shape
-# is unambiguous and distinguishable from the outer walls (which are just
-# the blank ring around the edge).
+# NaN filter: defect cells (P=0) rendered blank.
+# We use `boxxyerror` for the heatmap too (rather than `with image`) so that
+# each lattice cell renders as a SHARP 1×1 square — no PDF rasteriser
+# smoothing.  Same overlay (defect cells as dark-grey solid squares).
 set style fill solid 1.0 noborder
-plot_clean   = "'" . f_clean   . "' u 1:2:($3 > 0 ? $3 : NaN) with image notitle"
-plot_defects = "'" . f_defects . "' u 1:2:($3 > 0 ? $3 : NaN) with image notitle, '" \
+plot_clean   = "'" . f_clean   . "' u 1:2:(0.5):(0.5):($3 > 0 ? $3 : NaN) with boxxyerror fs solid 1.0 noborder lc palette notitle"
+plot_defects = "'" . f_defects . "' u 1:2:(0.5):(0.5):($3 > 0 ? $3 : NaN) with boxxyerror fs solid 1.0 noborder lc palette notitle, '" \
              . f_layout  . "' u 1:2:(0.5):(0.5) with boxxyerror fs solid 1.0 noborder fc rgb '#222222' notitle"
 
 #--------------------------------------------------------------------
@@ -76,13 +75,13 @@ if (mode eq "pdf" || mode eq "both") {
     set output 'tcrw_fig2_defects_occ.pdf'
 
     set multiplot layout 1,2 title \
-        "TCRW Fig 2 occupancy P(X,Y): clean vs plus-sign defect   |   ω = 0.0,  D_r = 10^{-3},  T = 10^{10}" \
+        "TCRW Fig 2 occupancy P(X,Y): clean vs L-shape defect   |   ω = 0.0,  D_r = 10^{-3},  T = 10^{10}" \
         font 'Helvetica,11'
 
     set title "clean box" font 'Helvetica,11'
     eval("plot " . plot_clean)
 
-    set title "plus-sign defect at (4, 5)" font 'Helvetica,11'
+    set title "L-shape defect (paper Fig 2k)" font 'Helvetica,11'
     eval("plot " . plot_defects)
 
     unset multiplot
@@ -97,13 +96,13 @@ if (mode eq "qt" || mode eq "both") {
     set terminal qt size 1100,500 enhanced font 'Helvetica,11'
 
     set multiplot layout 1,2 title \
-        "TCRW Fig 2 occupancy P(X,Y): clean vs plus-sign defect" \
+        "TCRW Fig 2 occupancy P(X,Y): clean vs L-shape defect" \
         font 'Helvetica,11'
 
     set title "clean box"
     eval("plot " . plot_clean)
 
-    set title "plus-sign defect at (4, 5)"
+    set title "L-shape defect (paper Fig 2k)"
     eval("plot " . plot_defects)
 
     unset multiplot

@@ -22,22 +22,28 @@
 !
 ! Geometry
 ! --------
-!   L × L lattice, L = 10.  Outer ring = walls (same as clean box).
-!   Plus-sign defect centered at (4, 5), total 5 cells:
+!   L × L lattice, L = 10  ⇒  walker plays on the FULL 10×10 grid
+!   (sites (x, y) ∈ {0..9}, paper convention).  Boundary handling is by
+!   the kernel's bounds check (chiral move with out-of-grid target →
+!   blocked, no rotation).  No outer wall ring — we matched authors'
+!   convention in TRW.py on 2026-04-30.
 !
-!       y=9  W W W W W W W W W W
-!       y=8  W . . . . . . . . W
-!       y=7  W . . . . . . . . W
-!       y=6  W . . . . D . . . W     ← top arm  (4, 6)
-!       y=5  W . . . D D D . . W     ← center + L/R arms (3,5), (4,5), (5,5)
-!       y=4  W . . . . D . . . W     ← bot arm  (4, 4)
-!       y=3  W . . . . . . . . W
-!       y=2  W . . . . . . . . W
-!       y=1  W . . . . . . . . W
-!       y=0  W W W W W W W W W W
+!   Defect pattern: paper Fig 2(k) L-shape, 7 cells (matches authors'
+!   notebook example for ω = 0):
+!
+!       y=9  . . . . . . . . . .
+!       y=8  . . . . . . . . . .
+!       y=7  . . . . . . . . . .
+!       y=6  . . . D . . . . . .     ← (3, 6)
+!       y=5  . . . D . . . . . .     ← (3, 5)
+!       y=4  . . . D . . . . . .     ← (3, 4)
+!       y=3  . . . D D D D . . .     ← (3, 3) (4, 3) (5, 3) (6, 3)
+!       y=2  . . . . . . . . . .
+!       y=1  . . . . . . . . . .
+!       y=0  . . . . . . . . . .
 !            0 1 2 3 4 5 6 7 8 9
 !
-!   Allowed sites: 64 (inner 8x8) − 5 (defect) = 59.
+!   Allowed sites: 100 (full 10×10) − 7 (defect) = 93.
 !
 ! Step kernel
 ! -----------
@@ -89,10 +95,10 @@ program tcrw_fig2_defects
    integer, parameter :: DX(0:3) = (/ 0,  1,  0, -1 /)
    integer, parameter :: DY(0:3) = (/ 1,  0, -1,  0 /)
 
-   ! ---- plus-sign defect (5 cells) ----
-   integer, parameter :: n_defects = 5
-   integer, parameter :: defect_x(n_defects) = (/ 4, 3, 5, 4, 4 /)
-   integer, parameter :: defect_y(n_defects) = (/ 5, 5, 5, 4, 6 /)
+   ! ---- L-shape defect (7 cells) — paper Fig 2(k) / authors' notebook ----
+   integer, parameter :: n_defects = 7
+   integer, parameter :: defect_x(n_defects) = (/ 3, 3, 3, 3, 4, 5, 6 /)
+   integer, parameter :: defect_y(n_defects) = (/ 3, 4, 5, 6, 3, 3, 3 /)
 
    ! ---- walker state ----
    integer     :: x, y, d
@@ -119,14 +125,10 @@ program tcrw_fig2_defects
    integer  :: n_outer, n_defect_ring, n_bulk
 
    ! -----------------------------------------------------------------
-   ! Build mask: outer ring walls + plus-sign defect
+   ! Build mask: full L×L grid with L-shape defect masked out.
+   ! Boundary handling = kernel bounds check (matches authors' TRW.py).
    ! -----------------------------------------------------------------
-   mask = .false.
-   do iy = 1, L - 2
-      do ix = 1, L - 2
-         mask(ix, iy) = .true.
-      end do
-   end do
+   mask = .true.
    do k = 1, n_defects
       mask(defect_x(k), defect_y(k)) = .false.
    end do
@@ -135,10 +137,10 @@ program tcrw_fig2_defects
 
    call sgrnd(seed)
 
-   print '(A)', '==== TCRW Fig 2 defects (plus-sign at (4,5)) ===='
+   print '(A)', '==== TCRW Fig 2 defects (L-shape, paper Fig 2(k)) ===='
    print '(A,I0,A,I0,A,I0,A)', '  grid: ', L, ' x ', L, &
                                '  allowed sites = ', n_allowed, &
-                               '  (inner 8x8 minus 5 defect cells)'
+                               '  (full L x L minus 7 defect cells)'
    print '(A,I14,A,ES9.2,A,F4.2)', '  T_steps = ', T_steps, &
                                    '   D_r = ', D_r, &
                                    '   ω = ', omega
@@ -164,7 +166,8 @@ program tcrw_fig2_defects
    f_om  = 0_i8
    f_dr  = 0_i8
 
-   ! initial position: (2, 2) — guaranteed allowed (not on defect, not on wall)
+   ! initial position: (2, 2) — guaranteed allowed (not on defect, not
+   ! on grid edge so the walker can immediately move in any direction).
    x = 2
    y = 2
    d = int(4.0_dp * grnd())
@@ -245,10 +248,10 @@ program tcrw_fig2_defects
    P_defect_ring_sum = 0.0_dp;  n_defect_ring = 0
    P_bulk_sum        = 0.0_dp;  n_bulk        = 0
 
-   do iy = 1, L - 2
-      do ix = 1, L - 2
+   do iy = 0, L - 1
+      do ix = 0, L - 1
          if (.not. mask(ix, iy)) cycle                ! skip defect cells
-         if (ix == 1 .or. ix == L-2 .or. iy == 1 .or. iy == L-2) then
+         if (ix == 0 .or. ix == L-1 .or. iy == 0 .or. iy == L-1) then
             P_outer_sum = P_outer_sum + real(occ(ix, iy), dp)
             n_outer = n_outer + 1
          else if (is_adjacent_to_defect(ix, iy)) then

@@ -107,7 +107,11 @@ program tcrw_fig3cde
    real(dp), parameter :: omega     = 1.0_dp
    integer,  parameter :: n_Dr      = 25
    real(dp), parameter :: log_Dr_min = -4.0_dp
-   real(dp), parameter :: log_Dr_max =  0.0_dp
+   real(dp), parameter :: log_Dr_max = -0.01_dp   ! stop at D_r ≈ 0.977
+                                                   ! (matches fig3a/b and Python
+                                                   ! exact grid; avoids the
+                                                   ! degenerate λ=1 eigenspace
+                                                   ! at exact D_r = 1).
    integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8
    integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7
    real(dp),    parameter :: K_meas       = 120.0_dp       ! bumped 30 → 120 for 3(d) small-D_r cleanup
@@ -125,6 +129,12 @@ program tcrw_fig3cde
    real(dp)    :: abs_JDr_y, abs_Jom_y, th_JDr_y, th_Jom_y
    integer(i8) :: Jx_Dr_tot, Jy_Dr_tot, Jx_om_tot, Jy_om_tot
    real(dp)    :: th_JDr_tot, th_Jom_tot
+   ! Interior-only (y = 1..L_cur-2) totals — paper convention for Fig 3(e)
+   integer(i8) :: Jx_Dr_in, Jy_Dr_in, Jx_om_in, Jy_om_in
+   real(dp)    :: th_JDr_in, th_Jom_in
+   ! Reconstructed T_use (matches the formula inside run_one); used to
+   ! convert raw step counts → steady-state currents written as extra cols.
+   real(dp)    :: tau_relax_cur, T_use_dp, J_Dr_norm, J_om_norm
 
    call sgrnd(seed)
 
@@ -152,13 +162,14 @@ program tcrw_fig3cde
         'N_burn_use = max(N_burn_floor, ', K_burn, '*max(L^2,1/D_r)/D_r)'
    write(u_field, '(A,I0,A,I0,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   seed = ', seed
    write(u_field, '(A)') '# columns:  iD  D_r  y  Jx_Dr  Jy_Dr  Jx_om  Jy_om  ' // &
-                         '|J_Dr|  th_Dr  |J_om|  th_om'
+                         '|J_Dr|  th_Dr  |J_om|  th_om  T_use  |J_Dr|/T  |J_om|/T'
 
    open(newunit=u_angle, file='tcrw_fig3e_summary.txt', status='replace', action='write')
    write(u_angle, '(A)') '# TCRW Fig 3(e):  θ_JDr and θ_Jω of the TOTAL left-wall current  (L = 10, ω = 1)'
    write(u_angle, '(A,I0,A,I0,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   seed = ', seed
    write(u_angle, '(A)') '# columns:  iD  D_r  Jx_Dr_tot  Jy_Dr_tot  Jx_om_tot  Jy_om_tot  ' // &
-                         'th_Dr_tot  th_om_tot'
+                         'th_Dr_tot  th_om_tot  ' // &
+                         'Jx_Dr_in  Jy_Dr_in  Jx_om_in  Jy_om_in  th_Dr_in  th_om_in'
 
    ! ---- sweep D_r ----
    print '(A)', '     iD       D_r          Jy_Dr_tot    Jy_om_tot      th_Dr_tot(rad)   th_om_tot(rad)   cpu[s]'
@@ -171,6 +182,10 @@ program tcrw_fig3cde
                    Jx_Dr, Jy_Dr, Jx_om, Jy_om)
       call cpu_time(t1)
       t_run = t1 - t0
+
+      ! ---- reconstruct T_use for this D_r (same formula as run_one) ----
+      tau_relax_cur = max(real(L_cur, dp)**2, 1.0_dp / D_r_cur) / D_r_cur
+      T_use_dp = max( real(T_floor, dp), K_meas * tau_relax_cur )
 
       ! ---- write per-site rows to Fig 3(c)/(d) file ----
       do y = 0, L_cur - 1
@@ -187,14 +202,27 @@ program tcrw_fig3cde
             th_Jom_y = 0.0_dp
          end if
 
-         write(u_field, '(I4, 1X, ES13.5, 1X, I3, 4(1X, I14), 1X, ES13.5, 1X, F10.5, 1X, ES13.5, 1X, F10.5)') &
+         ! Normalised steady-state currents (paper-style):
+         J_Dr_norm = abs_JDr_y / T_use_dp
+         J_om_norm = abs_Jom_y / T_use_dp
+
+         write(u_field, '(I4, 1X, ES13.5, 1X, I3, 4(1X, I14), 1X, ES13.5, 1X, F10.5, 1X, ES13.5, 1X, F10.5, 3(1X, ES13.5))') &
               iD, D_r_cur, y, &
               Jx_Dr(y), Jy_Dr(y), Jx_om(y), Jy_om(y), &
-              abs_JDr_y, th_JDr_y, abs_Jom_y, th_Jom_y
+              abs_JDr_y, th_JDr_y, abs_Jom_y, th_Jom_y, &
+              T_use_dp, J_Dr_norm, J_om_norm
       end do
       write(u_field, '(A)') ''     ! blank between D_r blocks (nice for gnuplot index)
 
       ! ---- aggregate totals over wall for Fig 3(e) ----
+      ! Two conventions written:
+      !   FULL-wall (y = 0..L_cur-1)     — matches Fortran<->Python cross-check
+      !   INTERIOR-only (y = 1..L_cur-2) — paper convention for plotting
+      !
+      ! Why interior-only for plotting:  corner sites sit on TWO walls and
+      ! contribute a constant Jx ~ O(D_r) that doesn't depend on ω/D_r in
+      ! the relevant way.  Including them smooths the sharp ±π/2 step at
+      ! ω = 0.5 (Fig 3j) into a smooth S-curve through 0.
       Jx_Dr_tot = sum(Jx_Dr)
       Jy_Dr_tot = sum(Jy_Dr)
       Jx_om_tot = sum(Jx_om)
@@ -209,9 +237,25 @@ program tcrw_fig3cde
          th_Jom_tot = atan2( real(Jy_om_tot, dp), real(Jx_om_tot, dp) )
       end if
 
-      write(u_angle, '(I4, 1X, ES13.5, 4(1X, I14), 2(1X, F10.5))') &
+      ! interior-only sums and angles (paper convention)
+      Jx_Dr_in = sum(Jx_Dr(1:L_cur-2))
+      Jy_Dr_in = sum(Jy_Dr(1:L_cur-2))
+      Jx_om_in = sum(Jx_om(1:L_cur-2))
+      Jy_om_in = sum(Jy_om(1:L_cur-2))
+      th_JDr_in = 0.0_dp
+      if (Jx_Dr_in /= 0_i8 .or. Jy_Dr_in /= 0_i8) then
+         th_JDr_in = atan2( real(Jy_Dr_in, dp), real(Jx_Dr_in, dp) )
+      end if
+      th_Jom_in = 0.0_dp
+      if (Jx_om_in /= 0_i8 .or. Jy_om_in /= 0_i8) then
+         th_Jom_in = atan2( real(Jy_om_in, dp), real(Jx_om_in, dp) )
+      end if
+
+      write(u_angle, '(I4, 1X, ES13.5, 4(1X, I14), 2(1X, F10.5), 4(1X, I14), 2(1X, F10.5))') &
            iD, D_r_cur, Jx_Dr_tot, Jy_Dr_tot, Jx_om_tot, Jy_om_tot, &
-           th_JDr_tot, th_Jom_tot
+           th_JDr_tot, th_Jom_tot, &
+           Jx_Dr_in, Jy_Dr_in, Jx_om_in, Jy_om_in, &
+           th_JDr_in, th_Jom_in
 
       print '(2X, I4, 2X, ES12.4, 2(2X, I12), 2(2X, F14.5), 2X, F7.2)', &
            iD, D_r_cur, Jy_Dr_tot, Jy_om_tot, th_JDr_tot, th_Jom_tot, t_run

@@ -69,10 +69,13 @@ set arrow from -0.02,  0.7854 to 1.02,  0.7854 nohead ls 99
 set arrow from 0.5, -1.7 to 0.5, 1.7 nohead ls 99
 
 # ---- plot command ----
-#   col 2 = ω, col 7 = θ_JDr_tot, col 8 = θ_Jω_tot
+# After fig3hij rerun: full-wall θ in cols 7-8 (used for cross-check vs
+# Python full-wall) AND interior-only θ in cols 13-14 (paper convention,
+# gives the sharp ±π/2 step at ω = 0.5 in θ_JDr instead of a smooth
+# S-curve through 0).
 plot_cmd = \
-  "'" . f . "' u 2:7 w lp ls 1 title 'θ_{J_{D_r}}', " . \
-  "'" . f . "' u 2:8 w lp ls 2 title 'θ_{J_{/Symbol w}}'"
+  "'" . f . "' u 2:13 w lp ls 1 title 'θ_{J_{D_r}}', " . \
+  "'" . f . "' u 2:14 w lp ls 2 title 'θ_{J_{/Symbol w}}'"
 
 #=====================================================================
 # PDF  (runs FIRST)

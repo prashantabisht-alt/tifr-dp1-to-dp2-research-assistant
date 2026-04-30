@@ -35,16 +35,24 @@ f = 'tcrw_fig3hij_summary.txt'
 
 # ---- arrow geometry ----
 # ω grid has 21 points spaced Δω = 0.05.  Half-spacing → clean
-# separation between adjacent columns, but big enough to read.
-ax = 0.025      # x-direction arrow scale (in ω units)
-ay = 0.40       # y-direction arrow scale (in site-index units; same as Fig 3c/d)
+# separation between adjacent columns.
+ax = 0.025      # max x-direction arrow scale (in ω units)
+ay = 0.40       # max y-direction arrow scale (in site-index units)
+
+# ---- arrow length scaling (Python exact reference) ----
+# Fig 3(h) is the one vector panel where arrow length shrinks with |J_Dr|;
+# Python uses s = 0.05 + 0.95 * |J_Dr| / max_panel(|J_Dr|).
+s_floor = 0.05
+stats f u (($3 >= 1 && $3 <= 8) ? $13 : 1/0) nooutput
+J_max = (STATS_max > 0 ? STATS_max : 1.0)
+slen(J) = (J > 0 ? s_floor + (1.0 - s_floor) * J / J_max : s_floor)
 
 # ---- axes (linear ω; no log trick needed) ----
 set xrange [-0.03 : 1.03]
-set yrange [0.5 : 9.5]        # show interior sites y = 1..9 for L_paper=10 (11×11 grid)
+set yrange [0.5 : 8.5]        # paper shows y = 1..8 (skip y=9 corner-adjacent)
 set xtics 0, 0.1, 1.0
 set mxtics 2
-set ytics 1, 1, 9
+set ytics 1, 1, 8
 set mytics 2
 set xlabel '{/Symbol w}'              font ',14'
 set ylabel 'left-edge site  y'        font ',14'
@@ -57,25 +65,29 @@ set title "TCRW Fig 3(h) — J_{D_r}(y) on left wall  (L = 10, D_r = 10^{-3})"  
 # mid-point where the arrows flip sense
 set arrow from 0.5, 0.5 to 0.5, 8.5 nohead lc rgb '#bbbbbb' dt 2 lw 0.8 front
 
-# ---- colorbar for log|J_Dr| ----
-set cblabel '|J_{D_r}|'                font ',12'
-set logscale cb
-set cbrange [1e1 : 1e6]        # per-site counts of post-noise wall departures
+# ---- colorbar for log10|J_Dr| (Python exact reference) ----
+set cblabel 'log_{10}|J_{D_r}|'        font ',12'
+unset logscale cb
+set cbrange [-7 : -5]
+set format cb "%g"
 set palette defined ( \
-   0 '#440154', \
-   1 '#3b528b', \
-   2 '#21918c', \
-   3 '#5ec962', \
-   4 '#fde725' )              # viridis, matches Fig 3(c/d)
+   0.000 '#053061', \
+   0.125 '#2166ac', \
+   0.250 '#4393c3', \
+   0.375 '#92c5de', \
+   0.500 '#f7f7f7', \
+   0.625 '#f4a582', \
+   0.750 '#d6604d', \
+   0.875 '#b2182b', \
+   1.000 '#67001f' )          # RdBu_r-like, matches Python exact
 
 # ---- plot command ----
-# col 2 = ω, col 3 = y, col 8 = |J_Dr|, col 9 = θ_Dr (radians)
-# center-tail arrows: tail at (ω - 0.5·ax·cosθ,  y - 0.5·ay·sinθ),
-#                     delta = (ax·cosθ, ay·sinθ).
+# After fig3hij rerun: col 13 = |J_Dr|/T_use and col 9 = θ_Dr.
+# Length scales linearly with col 13; color is log10(col 13).
 plot_cmd = \
-  "'" . f . "' u ($2 - 0.5*ax*cos($9)):($3 - 0.5*ay*sin($9))" . \
-               ":(ax*cos($9)):(ay*sin($9)):8 " . \
-               "w vectors head filled size 0.015,20 lw 1.6 lc palette " . \
+  "'" . f . "' u ($2 - 0.5*ax*slen($13)*cos($9)):($3 - 0.5*ay*slen($13)*sin($9))" . \
+               ":(ax*slen($13)*cos($9)):(ay*slen($13)*sin($9)):(log10($13)) " . \
+               "w vectors head filled size 0.012,20 lw 1.6 lc palette " . \
                "title ''"
 
 #=====================================================================

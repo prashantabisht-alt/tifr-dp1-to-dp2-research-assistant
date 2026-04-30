@@ -12,13 +12,19 @@
 !
 ! System
 ! ------
-!   L × L lattice, L = 10.  OBC: the outer ring of lattice points
-!   (x=0, x=L-1, y=0, y=L-1) are walls — the walker lives on the inner
-!   (L-2) × (L-2) = 8 × 8 playground.  When a chiral step targets a
-!   wall site the attempt is skipped (director unchanged).  This matches
-!   the paper's definition: "an edge or a boundary is defined as
-!   lattice points along the boundary not allowed to be occupied by
-!   the walker".
+!   L × L lattice, L = 10  ⇒  walker plays on the full 10×10 grid
+!   with sites (x, y) ∈ {0, 1, …, L-1}.  This matches the paper's
+!   "L = 10" convention (axes 0..9 in Fig 2(a)) and the authors'
+!   reference code TRW.py (which uses bounds-check OBC, no wall ring).
+!
+!   PREVIOUS VERSIONS used a wall-ring convention with mask = .false.
+!   on the outer cells, which made the walker live on an (L-2)×(L-2)
+!   playground.  That gave the right physics on a SMALLER box than the
+!   paper.  The wall ring has been removed (2026-04-30); the walker
+!   now uses the kernel's built-in bounds check
+!       0 ≤ nx < L  and  0 ≤ ny < L
+!   to decide whether a chiral step is blocked.  This is exactly what
+!   the authors' build_sparse_transition_matrix does in TRW.py.
 !
 ! Why one driver for two ω
 ! ------------------------
@@ -77,9 +83,9 @@
 !   tcrw_fig2_Jomega_w{0.0,0.5,1.0}.txt    : x  y  Jx  Jy  |J|
 !   tcrw_fig2_JDr_w{0.0,0.5,1.0}.txt       : x  y  Jx  Jy  |J|
 !
-!   Occupancy file writes ALL L × L sites (wall sites have P = 0) so
-!   gnuplot draws the full box.  Current files write ONLY allowed
-!   (inner) sites so the vector field is clean.
+!   Occupancy file writes ALL L × L sites of the full playground.
+!   Current files also write ALL L × L sites — every site is allowed
+!   under the no-wall-ring convention.
 !
 ! Build : gfortran -O2 -fno-range-check -ffree-line-length-none \
 !                  tcrw_fig2_clean.f90 -o tcrw_fig2_clean
@@ -130,19 +136,18 @@ program tcrw_fig2_clean
    real(dp) :: P_edge_sum, P_bulk_sum
    integer  :: n_edge, n_bulk
 
-   ! ---- build clean-box mask ----
-   mask = .false.
-   do iy = 1, L - 2
-      do ix = 1, L - 2
-         mask(ix, iy) = .true.
-      end do
-   end do
+   ! ---- mask: all sites accessible (paper / authors' convention) ----
+   ! Walker plays on the full L × L grid.  Boundary handling is done by
+   ! the kernel's bounds check inside tcrw_step_mask: chiral moves with
+   ! out-of-grid targets are blocked (director unchanged), exactly as in
+   ! authors' build_sparse_transition_matrix.
+   mask = .true.
 
    call sgrnd(seed)
 
-   print '(A)',                               '==== TCRW Fig 2 (clean OBC box) ===='
+   print '(A)',                               '==== TCRW Fig 2 (clean OBC box, paper L=10) ===='
    print '(A,I0,A,I0,A)',                     '  grid: ', L, ' x ', L, &
-                                              '  (inner 8 x 8 = 64 allowed sites)'
+                                              '  (full L x L playground, no wall ring)'
    print '(A,I14,A,ES9.2,A,I0)',              '  T_steps = ', T_steps, &
                                               '   D_r = ', D_r, '   seed = ', seed
    print '(A,I0,A)',                          '  first ', traj_len, ' steps saved as trajectory'
@@ -162,7 +167,7 @@ program tcrw_fig2_clean
       f_om  = 0_i8
       f_dr  = 0_i8
 
-      ! initial state: center of the inner box, random director
+      ! initial state: center of the L×L grid, random director
       x = L / 2
       y = L / 2
       d = int(4.0_dp * grnd())
@@ -222,13 +227,13 @@ program tcrw_fig2_clean
       call write_current(omega, 'JDr',    f_dr )
 
       ! -------- cheap sanity print --------
-      ! edge = allowed sites adjacent to wall (perimeter of inner box)
-      ! bulk = strictly interior of inner box
+      ! edge = full perimeter of L×L grid (boundary sites)
+      ! bulk = strictly interior sites (1..L-2, 1..L-2)
       P_edge_sum = 0.0_dp;  n_edge = 0
       P_bulk_sum = 0.0_dp;  n_bulk = 0
-      do iy = 1, L - 2
-         do ix = 1, L - 2
-            if (ix == 1 .or. ix == L-2 .or. iy == 1 .or. iy == L-2) then
+      do iy = 0, L - 1
+         do ix = 0, L - 1
+            if (ix == 0 .or. ix == L-1 .or. iy == 0 .or. iy == L-1) then
                P_edge_sum = P_edge_sum + real(occ(ix, iy), dp)
                n_edge = n_edge + 1
             else
@@ -255,7 +260,7 @@ program tcrw_fig2_clean
 contains
 
    !------------------------------------------------------------------
-   ! write P(X,Y) on the FULL L × L grid  (wall sites → P = 0)
+   ! write P(X,Y) on the FULL L × L grid (every site is allowed)
    !------------------------------------------------------------------
    subroutine write_occupancy(omega)
       real(dp), intent(in) :: omega

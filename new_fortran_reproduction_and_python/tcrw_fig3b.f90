@@ -150,7 +150,14 @@ program tcrw_fig3b
    integer,  parameter :: L_list(4) = (/ 4, 9, 19, 49 /)
    integer,  parameter :: n_Dr    = 25
    real(dp), parameter :: log_Dr_min = -4.0_dp
-   real(dp), parameter :: log_Dr_max =  0.0_dp
+   real(dp), parameter :: log_Dr_max = -0.01_dp   ! stop at D_r ≈ 0.977
+                                                   ! (no walker translation
+                                                   ! at D_r = 1 ⇒ degenerate
+                                                   ! steady state).
+                                                   ! Also avoids triggering
+                                                   ! the 1.0e15 sentinel in
+                                                   ! run_one's abs_Jom = 0
+                                                   ! branch.
    integer(i8), parameter :: T_floor      = 100000000_i8   ! 10^8
    integer(i8), parameter :: N_burn_floor =  10000000_i8   ! 10^7
    real(dp),    parameter :: K_meas       = 100.0_dp

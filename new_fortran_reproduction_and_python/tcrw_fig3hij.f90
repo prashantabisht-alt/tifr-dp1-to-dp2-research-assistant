@@ -168,6 +168,11 @@ program tcrw_fig3hij
    real(dp)    :: abs_JDr_y, abs_Jom_y, th_JDr_y, th_Jom_y
    integer(i8) :: Jx_Dr_tot, Jy_Dr_tot, Jx_om_tot, Jy_om_tot
    real(dp)    :: th_JDr_tot, th_Jom_tot
+   ! Interior-only (y = 1..L_cur-2) totals — paper convention for Fig 3(j)
+   integer(i8) :: Jx_Dr_in, Jy_Dr_in, Jx_om_in, Jy_om_in
+   real(dp)    :: th_JDr_in, th_Jom_in
+   ! T_use reconstruction (constant here since D_r is fixed):
+   real(dp)    :: tau_relax_cur, T_use_dp, J_Dr_norm, J_om_norm
 
    call sgrnd(seed)
 
@@ -196,17 +201,22 @@ program tcrw_fig3hij
         'N_burn_use = max(N_burn_floor, ', K_burn, '*max(L^2,1/D_r)/D_r)'
    write(u_field, '(A,I0,A,I0,A,ES11.4,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   D_r = ', D_r_fixed, '   seed = ', seed
    write(u_field, '(A)') '# columns:  iW  ω  y  Jx_Dr  Jy_Dr  Jx_om  Jy_om  ' // &
-                         '|J_Dr|  th_Dr  |J_om|  th_om'
+                         '|J_Dr|  th_Dr  |J_om|  th_om  T_use  |J_Dr|/T  |J_om|/T'
 
    open(newunit=u_angle, file='tcrw_fig3j_summary.txt', status='replace', action='write')
    write(u_angle, '(A)') '# TCRW Fig 3(j): θ_JDr and θ_Jω of the TOTAL left-wall current  (L = 10, D_r = 10^-3)'
    write(u_angle, '(A,I0,A,I0,A,ES11.4,A,I0)') '# L = ', L_paper, ' (sites = ', L_cur, ')   D_r = ', D_r_fixed, '   seed = ', seed
    write(u_angle, '(A)') '# columns:  iW  ω  Jx_Dr_tot  Jy_Dr_tot  Jx_om_tot  Jy_om_tot  ' // &
-                         'th_Dr_tot  th_om_tot'
+                         'th_Dr_tot  th_om_tot  ' // &
+                         'Jx_Dr_in  Jy_Dr_in  Jx_om_in  Jy_om_in  th_Dr_in  th_om_in'
 
    ! ---- sweep ω ----
    print '(A)', '     iW     ω         Jy_Dr_tot     Jy_om_tot       th_Dr_tot(rad)   th_om_tot(rad)   cpu[s]'
    print '(A)', '   ----  ------      ----------    ----------      ---------------  ---------------   ------'
+
+   ! T_use is constant since D_r is fixed; compute once outside the ω loop
+   tau_relax_cur = max(real(L_cur, dp)**2, 1.0_dp / D_r_fixed) / D_r_fixed
+   T_use_dp = max( real(T_floor, dp), K_meas * tau_relax_cur )
 
    do iW = 1, n_omega
       omega_cur = omega_values(iW)
@@ -231,14 +241,25 @@ program tcrw_fig3hij
             th_Jom_y = 0.0_dp
          end if
 
-         write(u_field, '(I4, 1X, F8.4, 1X, I3, 4(1X, I14), 1X, ES13.5, 1X, F10.5, 1X, ES13.5, 1X, F10.5)') &
+         ! Normalised steady-state currents (paper-style):
+         J_Dr_norm = abs_JDr_y / T_use_dp
+         J_om_norm = abs_Jom_y / T_use_dp
+
+         write(u_field, '(I4, 1X, F8.4, 1X, I3, 4(1X, I14), 1X, ES13.5, 1X, F10.5, 1X, ES13.5, 1X, F10.5, 3(1X, ES13.5))') &
               iW, omega_cur, y, &
               Jx_Dr(y), Jy_Dr(y), Jx_om(y), Jy_om(y), &
-              abs_JDr_y, th_JDr_y, abs_Jom_y, th_Jom_y
+              abs_JDr_y, th_JDr_y, abs_Jom_y, th_Jom_y, &
+              T_use_dp, J_Dr_norm, J_om_norm
       end do
       write(u_field, '(A)') ''     ! blank between ω blocks (nice for gnuplot index)
 
       ! ---- aggregate totals over wall for Fig 3(j) ----
+      ! Two conventions written:
+      !   FULL-wall (y = 0..L_cur-1)     — matches Fortran<->Python cross-check
+      !   INTERIOR-only (y = 1..L_cur-2) — paper convention for plotting
+      ! Corners y=0,L_cur-1 sit on TWO walls and contribute a constant Jx
+      ! that survives all ω, smoothing the sharp ±π/2 step at ω=0.5 into
+      ! a smooth S-curve through 0.  Interior gives the paper's sharp jump.
       Jx_Dr_tot = sum(Jx_Dr)
       Jy_Dr_tot = sum(Jy_Dr)
       Jx_om_tot = sum(Jx_om)
@@ -253,9 +274,25 @@ program tcrw_fig3hij
          th_Jom_tot = atan2( real(Jy_om_tot, dp), real(Jx_om_tot, dp) )
       end if
 
-      write(u_angle, '(I4, 1X, F8.4, 4(1X, I14), 2(1X, F10.5))') &
+      ! interior-only sums and angles (paper convention for plotting)
+      Jx_Dr_in = sum(Jx_Dr(1:L_cur-2))
+      Jy_Dr_in = sum(Jy_Dr(1:L_cur-2))
+      Jx_om_in = sum(Jx_om(1:L_cur-2))
+      Jy_om_in = sum(Jy_om(1:L_cur-2))
+      th_JDr_in = 0.0_dp
+      if (Jx_Dr_in /= 0_i8 .or. Jy_Dr_in /= 0_i8) then
+         th_JDr_in = atan2( real(Jy_Dr_in, dp), real(Jx_Dr_in, dp) )
+      end if
+      th_Jom_in = 0.0_dp
+      if (Jx_om_in /= 0_i8 .or. Jy_om_in /= 0_i8) then
+         th_Jom_in = atan2( real(Jy_om_in, dp), real(Jx_om_in, dp) )
+      end if
+
+      write(u_angle, '(I4, 1X, F8.4, 4(1X, I14), 2(1X, F10.5), 4(1X, I14), 2(1X, F10.5))') &
            iW, omega_cur, Jx_Dr_tot, Jy_Dr_tot, Jx_om_tot, Jy_om_tot, &
-           th_JDr_tot, th_Jom_tot
+           th_JDr_tot, th_Jom_tot, &
+           Jx_Dr_in, Jy_Dr_in, Jx_om_in, Jy_om_in, &
+           th_JDr_in, th_Jom_in
 
       print '(2X, I4, 2X, F6.3, 2(2X, I12), 2(2X, F14.5), 2X, F7.2)', &
            iW, omega_cur, Jy_Dr_tot, Jy_om_tot, th_JDr_tot, th_Jom_tot, t_run

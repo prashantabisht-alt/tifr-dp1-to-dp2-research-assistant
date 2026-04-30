@@ -50,10 +50,13 @@ set xlabel 'X'
 set ylabel 'Y'
 unset grid
 
-# Filter: walls (P=0) rendered as NaN → blank.
-plot_cmd_0 = "'" . f0 . "' u 1:2:($3 > 0 ? $3 : NaN) with image notitle"
-plot_cmd_5 = "'" . f5 . "' u 1:2:($3 > 0 ? $3 : NaN) with image notitle"
-plot_cmd_1 = "'" . f1 . "' u 1:2:($3 > 0 ? $3 : NaN) with image notitle"
+# SHARP cells: use `boxxyerror` (x:y:xdelta:ydelta:value) so each lattice
+# cell renders as a 1×1 square coloured by P.  This avoids PDF-rasteriser
+# smoothing that `with image` triggers.
+set style fill solid 1.0 noborder
+plot_cmd_0 = "'" . f0 . "' u 1:2:(0.5):(0.5):($3 > 0 ? $3 : NaN) with boxxyerror fs solid 1.0 noborder lc palette notitle"
+plot_cmd_5 = "'" . f5 . "' u 1:2:(0.5):(0.5):($3 > 0 ? $3 : NaN) with boxxyerror fs solid 1.0 noborder lc palette notitle"
+plot_cmd_1 = "'" . f1 . "' u 1:2:(0.5):(0.5):($3 > 0 ? $3 : NaN) with boxxyerror fs solid 1.0 noborder lc palette notitle"
 
 #--------------------------------------------------------------------
 # PDF  (headless first)

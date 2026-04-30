@@ -44,11 +44,14 @@ set style line 99 lc rgb '#bbbbbb' dt 2 lw 0.8            # ratio=1 guide
 set logscale x 10
 set logscale y 10
 set xrange [5e-5 : 2.0]
-set yrange [0.5  : 1e6]
+set yrange [0.7  : 5e3]
 set xlabel 'D_r'                      font ',14'
 set ylabel 'P_{edge} / P_{bulk}'      font ',14'
 set format x '10^{%T}'
-set format y '10^{%T}'
+# explicit ytics within [0.7:5e3]; avoids the gnuplot quirk where
+# `set format y "10^{%T}"` labels every minor tick as the same decade.
+set ytics ( "10^0" 1, "10^1" 10, "10^2" 100, "10^3" 1000 )
+set mytics 10
 set tics scale 0.8
 set grid   lc rgb '#dddddd' lw 0.4
 set border lw 1.0

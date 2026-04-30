@@ -1,6 +1,6 @@
 #=====================================================================
 # tcrw_fig2_defects_currents.gnu — Fig 2 rows (m), (n), (o):
-#                                   J_tot, J_ω, J_Dr with plus-sign
+#                                   J_tot, J_ω, J_Dr with L-shape
 #                                   defect, compared side-by-side
 #                                   with clean box at ω = 0.
 #
@@ -58,16 +58,21 @@ Jdr_d  = 'tcrw_fig2_JDr_defects.txt'
 f_layout = 'tcrw_fig2_defects_layout.txt'
 
 # ---- vector plot settings ----
-arrow_len = 0.45
+arrow_len    = 0.45
+mag_thresh   = 5e-6                     # MC-noise-aware threshold for T = 10^10.
+                                        # Bulk noise floor ~ 1e-6 to 1e-5.5 per
+                                        # cell.  Edge signal ~ 3e-5.  At 5e-6 the
+                                        # bulk hides cleanly while edge + defect
+                                        # ring stay visible.
 
 # Clean-row vector expression: only the vector field.
-vec_clean(f) = sprintf("'%s' u ($3*$3+$4*$4 > 1e-30 ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle", f, arrow_len, arrow_len)
+vec_clean(f) = sprintf("'%s' u (sqrt($3*$3+$4*$4) > %g ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle", f, mag_thresh, arrow_len, arrow_len)
 
 # Defects-row vector expression: vector field + defect-cell overlay.
 # The overlay uses `boxxyerror` (x:y:xdelta:ydelta) so each dark grey box
 # covers EXACTLY one lattice cell (±0.5 around the cell centre), making the
-# plus-sign geometry immediately readable on the vector-field panels.
-vec_def(f) = sprintf("'%s' u ($3*$3+$4*$4 > 1e-30 ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle, '%s' u 1:2:(0.5):(0.5) with boxxyerror fs solid 1.0 noborder fc rgb '#222222' notitle", f, arrow_len, arrow_len, f_layout)
+# defect geometry immediately readable on the vector-field panels.
+vec_def(f) = sprintf("'%s' u (sqrt($3*$3+$4*$4) > %g ? $1 : NaN) : 2 : ($3/sqrt($3*$3+$4*$4)*%f) : ($4/sqrt($3*$3+$4*$4)*%f) : (sqrt($3*$3+$4*$4)) with vectors head filled size 0.12,20,60 lw 1.2 lc palette notitle, '%s' u 1:2:(0.5):(0.5) with boxxyerror fs solid 1.0 noborder fc rgb '#222222' notitle", f, mag_thresh, arrow_len, arrow_len, f_layout)
 
 # fill style for the boxxyerror overlay (gnuplot requires `set style fill`)
 set style fill solid 1.0 noborder
@@ -95,7 +100,7 @@ if (mode eq "pdf" || mode eq "both") {
     set output 'tcrw_fig2_defects_currents.pdf'
 
     set multiplot layout 2,3 title \
-        "TCRW Fig 2 currents: clean vs plus-sign defect   |   J = J_ω + J_{D_r}   |   ω = 0.0,  D_r = 10^{-3},  T = 10^{10}" \
+        "TCRW Fig 2 currents: clean vs L-shape defect   |   J = J_ω + J_{D_r}   |   ω = 0.0,  D_r = 10^{-3},  T = 10^{10}" \
         font 'Helvetica,11'
 
     # --- row 1: clean box ---
@@ -130,7 +135,7 @@ if (mode eq "qt" || mode eq "both") {
     set terminal qt size 1400,900 enhanced font 'Helvetica,11'
 
     set multiplot layout 2,3 title \
-        "TCRW Fig 2 currents: clean vs plus-sign defect   |   J = J_ω + J_{D_r}" \
+        "TCRW Fig 2 currents: clean vs L-shape defect   |   J = J_ω + J_{D_r}" \
         font 'Helvetica,11'
 
     set title "J_{tot}   (clean)"
