@@ -11,5 +11,9 @@ echo "Running..."
 ./kmc_triangular | tee kmc_run.log
 
 echo ""
-echo "Now compare with theory:"
-echo "    python3 kmc_fortran_vs_theory.py"
+echo "Now compare with corrected exact theory:"
+echo "    python3 fig11_final_hex.py"
+echo ""
+echo "For the PI-friendly gnuplot version:"
+echo "    python3 export_fig11_final_hex_gnuplot_data.py"
+echo "    gnuplot fig11_final_hex.gnu"

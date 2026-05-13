@@ -1,6 +1,10 @@
 """
-Forensic test: Dipanjan's rectangular k-grid vs the corrected sheared
+LEGACY forensic test: Dipanjan's rectangular k-grid vs a sheared
 triangular-torus k-grid.
+
+This predates the c3 sign-error diagnosis. It intentionally reproduces
+Dipanjan's old Bloch matrix and should not be used for the current corrected
+JMVR theory. The current source of truth is triangular_jmvr_corrected.py.
 
 Reproduces Dipanjan's Mathematica calculation exactly, then runs the
 corrected version. Compares P(x, 4, t=10) for x = 0, 2, ..., 2L-2.

@@ -2,8 +2,9 @@
 Day-1 starter: triangular JMVR 6×6 Bloch matrix.
 
 Goal of this file:
-  1. Build the 6×6 generator M(k) for JMVR-style chirality on triangular lattice
-  2. Verify it matches Dipanjan's `coeff_i` expressions term-by-term
+  1. Build the corrected 6x6 generator M(k) for JMVR-style chirality
+  2. Keep Dipanjan's old c3 sign only as a comparison in
+     triangular_jmvr_corrected.py
   3. Diagonalize across the Γ-M-K-Γ path of the triangular BZ
   4. Plot all 6 bands at ε=0 (achiral) and ε=0.15 (Dipanjan's value)
 
@@ -20,7 +21,12 @@ Dipanjan's coeff_i (rtp_tl_2.nb), for reference — Eq. (5) of the Confinement d
                       - 1 - γ
                       + 2 i ε sin(k · ê_i)
 
-where the sin argument for i = 1, 2, 3 is k · (2a, 0), k · (a, b), k · (a, -b) respectively.
+The corrected calculation flips the third sign:
+
+    coeff_3 = bulk - 1 - gamma - 2 i epsilon sin(a k1 - b k2)
+
+where the sin argument for i = 1, 2 is k · (2a, 0), k · (a, b), and the
+state-2/c3 axis is fixed from the Appendix-B master equation.
 Conjugates fill in i = 4, 5, 6 (the opposite directors).
 
 Off-diagonal entries: γ/2 at positions (i, i+1 mod 6) and (i, i-1 mod 6).
@@ -32,6 +38,8 @@ from __future__ import annotations
 import numpy as np
 import matplotlib.pyplot as plt
 
+from triangular_jmvr_corrected import build_Mk_corrected
+
 
 # ---------------------------------------------------------------------------
 # 1.  6×6 Bloch matrix M(k)
@@ -39,39 +47,12 @@ import matplotlib.pyplot as plt
 def build_Mk(gamma: float, epsilon: float, k1: float, k2: float,
              a: float = 1.0, b: float = 1.0) -> np.ndarray:
     """
-    Triangular JMVR 6×6 generator at Bloch momentum (k1, k2).
+    Corrected triangular JMVR 6x6 generator at Bloch momentum (k1, k2).
 
-    Returns the complex 6×6 matrix exactly as in Dipanjan's `mat[k1, k2]`.
+    Dipanjan's original c3 sign is available only through
+    triangular_jmvr_corrected.build_Mk_dipanjan.
     """
-    # Three "forward" axes for directors 1, 2, 3
-    axes = [(2 * a, 0.0),     # ê_1
-            (a, b),           # ê_2
-            (a, -b)]          # ê_3
-    # The bulk (symmetric) hopping factor: (1/3) × (3 cosines)
-    bulk = (1.0 / 3.0) * (
-        np.cos(2 * a * k1)
-        + np.cos(a * k1 + b * k2)
-        + np.cos(a * k1 - b * k2)
-    )
-    # coeff_i for i = 1, 2, 3
-    coeff = []
-    for vx, vy in axes:
-        kd = vx * k1 + vy * k2
-        ci = bulk - 1.0 - gamma + 2j * epsilon * np.sin(kd)
-        coeff.append(ci)
-    # Assemble 6×6
-    M = np.zeros((6, 6), dtype=complex)
-    M[0, 0] = coeff[0]
-    M[1, 1] = coeff[1]
-    M[2, 2] = coeff[2]
-    M[3, 3] = np.conj(coeff[0])     # director 4 = -ê_1
-    M[4, 4] = np.conj(coeff[1])     # director 5 = -ê_2
-    M[5, 5] = np.conj(coeff[2])     # director 6 = -ê_3
-    # Rotation: γ/2 to d ± 1 mod 6
-    for i in range(6):
-        M[i, (i + 1) % 6] += gamma / 2.0
-        M[i, (i - 1) % 6] += gamma / 2.0
-    return M
+    return build_Mk_corrected(gamma, epsilon, k1, k2, a, b)
 
 
 # ---------------------------------------------------------------------------
@@ -104,7 +85,8 @@ def sanity_check(gamma: float = 0.01, epsilon: float = 0.15):
     print(f"          (λ_0 should be 0; others should have Re < 0)")
     assert abs(sorted_evals[0]) < 1e-10, "No zero eigenvalue at k=0"
 
-    # Test 3: Term-by-term match with Dipanjan's coeff_i at random (k1, k2)
+    # Test 3: Term-by-term match for an unaffected coefficient at random (k1, k2).
+    # The corrected-vs-Dipanjan difference is only in c3.
     k1_test, k2_test = 0.7, -1.3
     M = build_Mk(gamma, epsilon, k1_test, k2_test)
     expected_coeff_1 = (

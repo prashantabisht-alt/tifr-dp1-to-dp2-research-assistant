@@ -5,16 +5,16 @@
   seed    = 20260511
 
   walkers done:     10000000   cpu =     15.5 s
-  walkers done:     20000000   cpu =     30.8 s
-  walkers done:     30000000   cpu =     46.1 s
-  walkers done:     40000000   cpu =     61.3 s
-  walkers done:     50000000   cpu =     82.3 s
-  walkers done:     60000000   cpu =    110.4 s
-  walkers done:     70000000   cpu =    137.1 s
-  walkers done:     80000000   cpu =    163.8 s
-  walkers done:     90000000   cpu =    190.2 s
-  walkers done:    100000000   cpu =    216.9 s
-  ALL DONE in    216.9 s
+  walkers done:     20000000   cpu =     30.9 s
+  walkers done:     30000000   cpu =     46.2 s
+  walkers done:     40000000   cpu =     61.6 s
+  walkers done:     50000000   cpu =     76.9 s
+  walkers done:     60000000   cpu =     92.1 s
+  walkers done:     70000000   cpu =    107.4 s
+  walkers done:     80000000   cpu =    122.8 s
+  walkers done:     90000000   cpu =    138.0 s
+  walkers done:    100000000   cpu =    153.3 s
+  ALL DONE in    153.3 s
 Saved kmc_triangular_counts.txt
   Sum counts =      100000000   (should equal n_walkers =    100000000
 )

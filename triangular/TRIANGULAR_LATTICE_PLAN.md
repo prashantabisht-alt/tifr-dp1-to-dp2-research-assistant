@@ -1,11 +1,69 @@
 # Triangular Lattice Active Random Walker — research plan after PI meeting
 
-**Meeting date:** 2026-05-04 (Mon)  ·  **Today:** 2026-05-11 (Mon)  ·  **Deadline:** Fri 2026-05-15
+**Meeting date:** 2026-05-04 (Mon)  ·  **Today:** 2026-05-13 (Wed)  ·  **Deadline:** Fri 2026-05-15
 **PI:** Kabir Ramola
 **Recording:** transcribed from Apple Watch
-**Last revised:** 2026-05-11 evening, after web-search + Mathematica audit
+**Last revised:** 2026-05-13 evening, after two-bug k-grid/sign diagnosis + KMC verification
 
 **Strategic note (from PI lesson learned):** show small results frequently, not one big dump. Each working-day target = one figure or one result PI can absorb in 2 minutes. Friday is the soft deadline for first band-structure result.
+
+---
+
+## 0. Current status as of 2026-05-13
+
+**Main result so far:** Dipanjan's triangular calculation failed for two reasons: the rectangular notebook k-grid is not the correct sheared grid for the triangular \(L\times L\) torus, and the Fourier coefficient \(c_3\) has a local chirality-sign error. The corrected torus grid and corrected sign are now the default in `triangular_jmvr_corrected.py`.
+
+The corrected triangular-torus k-grid is
+
+$$
+k_1=\frac{\pi m_1}{aL},
+\qquad
+k_2=\frac{\pi(2m_2-m_1)}{bL}.
+$$
+
+The sign correction is
+
+$$
+c_3 = B - 1 - \gamma + 2 i \epsilon \sin(a k_1-b k_2)
+\quad\longrightarrow\quad
+c_3 = B - 1 - \gamma - 2 i \epsilon \sin(a k_1-b k_2).
+$$
+
+**Done**
+- 6-state triangular JMVR generator derived and coded.
+- Dipanjan's `rtp_tl_2.nb` audited.
+- Triangular-torus k-grid/PBC issue diagnosed.
+- Appendix-B master equations checked term by term.
+- \(c_3\) sign error diagnosed.
+- Four-way k-grid/sign comparison made in `forensic_two_bugs.py`.
+- Finite real-space generator versus Bloch spectrum check made in `verify_realspace_bloch.py`.
+- Independent \(10^8\)-walker KMC run completed.
+- Corrected sheared-grid theory matches KMC at the Monte Carlo noise floor:
+
+$$
+\mathrm{RMS}_{\rm rectangular+old}=4.448\times 10^{-4},
+\qquad
+\mathrm{RMS}_{\rm sheared+old}=1.428\times 10^{-4},
+\qquad
+\mathrm{RMS}_{\rm sheared+corrected}=3.434\times 10^{-6},
+\qquad
+\sigma_{\rm MC}\approx 4.223\times 10^{-6}.
+$$
+
+- Final Fig. 11 replacement made: `fig11_final_hex.png`.
+- Evidence figure with residuals made: `fig11_final_hex_evidence.png`.
+- PI-facing note made: `PI_NOTE_TWO_BUGS_AND_CHECKS.md`.
+
+**Partly done**
+- Band plots exist, including tracked line plots, but they still need to be regenerated from the canonical corrected matrix and a proper triangular BZ path.
+
+**Remaining**
+- Corrected \(\Gamma-M-K-\Gamma\) band structure.
+- Gap scan versus \(\epsilon\) at fixed \(\gamma\).
+- Larger/polished real-space/Bloch finite-torus verification if needed for a paper note.
+- Multi-particle/clustering extension.
+- Topological invariants.
+- Track B triangular TCRW.
 
 ---
 
@@ -103,7 +161,9 @@ Reading it row-by-row (corrected after review 2026-05-11):
 
 1. **Lattice parametrization (likely not a bug).** With `a = b = 1`, the NN vectors $(2a, 0), (a, b), (a, -b)$ have lengths $2, \sqrt{2}, \sqrt{2}$ — **not isotropic in Cartesian**. But this is a **deliberate algebraic parametrization** (matches the Confinement draft Fig 1 explicitly), not a geometric mistake. For a true 60°-isotropic triangular metric, use $b = \sqrt{3}\, a$; for the Confinement-draft convention, use $a = b$. The two are related by an affine reparametrization that preserves all topological invariants. **The original "this is a bug" hypothesis was wrong; this is just convention.**
 
-2. **PBC asymmetry in Fourier wavevectors.** Dipanjan defines $k_x[n] = 2\pi n/(2aL)$ and $k_y[n] = 2\pi n/(bL)$ — the x-period is doubled relative to y. **This is the correct BZ for the chosen parametrization** (the lattice vectors $(2a, 0)$ and $(a, b)$ span a parallelogram with that exact reciprocal). Probably NOT the bug Kabir flagged. **Need to look at the real-space PBC implementation to find the actual bug** — the Bloch part looks self-consistent.
+2. **PBC asymmetry in Fourier wavevectors.** Dipanjan defines $k_x[n] = 2\pi n/(2aL)$ and $k_y[n] = 2\pi n/(bL)$ — the x-period is doubled relative to y. **This is the correct BZ for the chosen parametrization** (the lattice vectors $(2a, 0)$ and $(a, b)$ span a parallelogram with that exact reciprocal). This is probably NOT the bug Kabir flagged.
+
+**Update 2026-05-13:** the dominant mismatch is now diagnosed as a sign error in \(c_3\), not as a PBC error. PBC verification is still useful, but now as a robustness check: build the real-space finite-torus generator and confirm its block spectrum matches the corrected Bloch matrix at the allowed discrete momenta.
 
 ### 2.3 The PBC trap on triangular
 PI drew the geometry explicitly and walked through the trap:
@@ -466,17 +526,22 @@ Not sent but mentioned. Find it: "Scheibner Cohen Vitelli odd elasticity Nature 
 
 ### Where we are right now
 
-- 6×6 generator $M(\mathbf{k})$ built in `triangular_jmvr_v1.py`.
-- Bit-identical to Dipanjan's `coeff_i` at a random test point.
+- Corrected 6×6 generator $M(\mathbf{k})$ is now centralized in `triangular_jmvr_corrected.py`.
+- `build_Mk_corrected(...)` is the default scientific matrix; `build_Mk_dipanjan(...)` is kept only to reproduce the old sign bug.
+- The root folder is now organized. Active workflows are documented in `README.md`; old bug-hunt scripts and superseded plots live in `legacy_debug/`.
+- The active starter script `triangular_active_walker.py` points to the corrected matrix. The older day-1 starter `triangular_jmvr_v1.py` is archived in `legacy_debug/scripts/`.
 - Eigenvalues at $\mathbf{k}=0$ (for $\gamma=0.01$): $\{0,\ -\gamma/2,\ -\gamma/2,\ -3\gamma/2,\ -3\gamma/2,\ -2\gamma\}$ — Perron eigenvalue $\lambda_0 = 0$ confirms a stationary state exists.
-- At $\epsilon=0$ the spectrum is real; at $\epsilon=0.15$ it picks up imaginary parts. Non-Hermitian topology activates with chirality.
-- Band-structure plot exists but band identity is scrambled by argsort sorting — fix needed.
+- At $\epsilon=0$ the spectrum is real; at $\epsilon=0.15$ it picks up imaginary parts.
+- Sixfold spectral symmetry catches the bug: corrected matrix passes to numerical precision; Dipanjan's old sign fails.
+- Four-way comparison confirms neither correction alone is enough; sheared grid plus corrected \(c_3\) matches \(10^8\)-walker KMC at the MC noise floor.
+- Fig. 11 exact theory now matches \(10^8\)-walker KMC at the MC noise floor.
+- Band plots exist, but the next publishable band result must be regenerated from the corrected canonical matrix and a proper BZ path.
 
 ### What the physics demands next, in logical order
 
 Move to the next step only when the previous one's answer is solid. No time budget on any of them.
 
-**Step 1 — Make the band structure actually visible.** Hungarian band-matching from `tcrw_fig4b_paper.py::fig4b_band_structure` ports directly to 6 bands. Until this is done, we cannot answer "is there a gap?" — the current plot literally has the bands relabeled at every crossing. Prerequisite for everything below.
+**Step 1 — Make the corrected band structure actually visible.** Use `triangular_jmvr_corrected.py` as the only matrix source. Hungarian band-matching from `tcrw_fig4b_paper.py::fig4b_band_structure` ports directly to 6 bands. Until this is done, we cannot answer "is there a gap?" cleanly.
 
 **Step 2 — Compute the BZ path properly.** Use the reciprocal lattice $\mathbf{b}_1, \mathbf{b}_2$ from $\mathbf{a}_1 = (2, 0), \mathbf{a}_2 = (1, 1)$ (Dipanjan's convention) and find the exact $\Gamma, M, K$. Until this is right, features at the corners might be sampling artefacts and aren't trustworthy.
 
@@ -491,11 +556,11 @@ Move to the next step only when the previous one's answer is solid. No time budg
 
 **Step 6 — Topological invariants (Berry curvature, Wilson loops).** Only meaningful once Step 3 gives a non-trivial gap structure. FHS algorithm from §3.6.4. If JMVR turns out trivial, this step pivots to Track B (TCRW-style chirality on triangular).
 
-**Step 7 — PBC bug hunt and real-space verification.** Build the real-space transition matrix on a finite triangular lattice. Compare its discrete spectrum to the Bloch eigenvalues at quantized $\mathbf{k}$-points. Any mismatch → that's the bug Kabir mentioned. This is also the foundation for edge-current calculations in OBC.
+**Step 7 — Real-space/Bloch verification.** The main mismatch is already explained by the \(c_3\) sign. Still build the real-space transition matrix on a finite triangular lattice and compare its discrete spectrum to the corrected Bloch eigenvalues at quantized $\mathbf{k}$-points. This future-proofs the PBC implementation and is also the foundation for edge-current calculations in OBC.
 
 ### What's deliberately NOT in this sequence
 
-- **Monte Carlo Fortran.** The eigenvalue calculation IS the result for everything in Steps 1–6. MC would only be needed if we want to verify Step 7 with a finite-time walker simulation, and even there, kinetic Monte Carlo in Python is simpler.
+- **New expensive Monte Carlo.** The existing \(10^8\)-walker KMC already verifies the sign fix. Do not rerun it unless a new result specifically needs it.
 - **TCRW-style chirality on triangular** (Track B). Only after Steps 1–5 give a clean JMVR picture. If Step 6 shows JMVR is topologically trivial, that's when Track B becomes the active path.
 - **Multi-particle interactions, odd elasticity, topological mechanics.** PI's longer-term direction. Reading material for after the JMVR triangular calculation is done.
 
@@ -514,7 +579,7 @@ When there's something concrete to say, not on a calendar. Likely natural moment
 - After Step 3: "Sir, here's the band structure on triangular. The gap [closes at ε=? / stays open]. Compared to square TCRW where it closes at ω=1/2, this is [the same / different]."
 - After Step 4: "Sir, here's the §IV.B figure for the Confinement draft — single walker on triangular. The chirality shows up as ___."
 - After Step 6: "Sir, the Chern number / Wilson phase is ___ in the regime ε > ε*."
-- After Step 7: "Sir, found the PBC issue Dipanjan had — it was ___."
+- After Step 7: "Sir, verified the real-space matrix and Bloch matrix agree on the triangular torus."
 
 PI doesn't want weekly progress updates. He wants research answers. Don't artificially fragment them.
 
@@ -529,13 +594,18 @@ PI doesn't want weekly progress updates. He wants research answers. Don't artifi
 3. ~~Timeline~~ — **RESOLVED.** Soft Friday deadline (2026-05-15) for first band-structure plot.
 4. ~~Edge geometry~~ — **PROVISIONALLY RESOLVED.** Start with rhombus (simpler). Hexagon if time permits.
 
+### Resolved 2026-05-13
+
+5. ~~Where is the old theory-vs-KMC mismatch?~~ — **RESOLVED.** It is a two-part issue: Dipanjan's rectangular Fourier grid is not the sheared triangular-torus grid, and the draft/Mathematica \(c_3\) coefficient has the wrong chirality sign. Neither correction alone reaches KMC; both corrections together agree with \(10^8\)-walker KMC at the MC noise floor. See `PI_NOTE_TWO_BUGS_AND_CHECKS.md` and `forensic_two_bugs.py`.
+6. ~~Does the corrected matrix pass a stronger check than probability conservation?~~ — **RESOLVED.** The corrected matrix passes the sixfold spectral-symmetry check; Dipanjan's old sign fails it.
+
 ### Still open (ask Kabir when convenient, or proceed with default)
 
-5. **"γ/2_A vs γ/2_B" in PI's handwritten notes** — best guess: PI was using approximate shorthand for the forward/backward translation rates ($\frac{1}{6} + \epsilon$ vs $\frac{1}{6} - \epsilon$ in the triangular case, or $\frac{1}{2} \pm \epsilon$ in 1D). The "γ/2" was probably mis-named — the actual rotation rate γ doesn't enter the translation rates. Default: use 1/6 ± ε for triangular forward/backward bias.
-6. **Lattice parametrization** — Dipanjan used $a = b = 1$ which gives Cartesian NN lengths $(2, \sqrt{2}, \sqrt{2})$. **Corrected (2026-05-11): this is a deliberate parametrization choice, not a bug.** The Confinement draft Fig 1 uses these exact coordinates. Topologically equivalent to true 60°-isotropic ($\mathbf{a}_1 = (1, 0)$, $\mathbf{a}_2 = (1/2, \sqrt{3}/2)$). Either works; pick one and stick with it. Recommend: **use Dipanjan's $(2a, 0), (a, b), (a, -b)$ convention** so the matrix structure literally matches the draft's equations. Easier for cross-checking.
-7. **Anshuman's contact** — Anshuman Pandey? Anshuman Kumar? Don't know. **Plan:** ask Kabir or the group's mailing list for contact. Useful for PBC code reference but not blocking.
-8. **Which chirality convention to do FIRST** — JMVR-style (translation bias) is now the primary track (Track A). TCRW-style (rotation bias) is Track B, secondary.
-9. **Where is the PBC bug Kabir mentioned?** — Not in the Bloch matrix (which looks self-consistent). Must be in Dipanjan's real-space implementation (which we haven't extracted from the `.nb` yet). **Plan:** once we have a working Bloch implementation, build the real-space PBC matrix on a small grid and compare back to the eigenvalue structure of the Bloch matrix at the discrete k-points. Any mismatch → that's the PBC bug.
+7. **"γ/2_A vs γ/2_B" in PI's handwritten notes** — best guess: PI was using approximate shorthand for the forward/backward translation rates ($\frac{1}{6} + \epsilon$ vs $\frac{1}{6} - \epsilon$ in the triangular case, or $\frac{1}{2} \pm \epsilon$ in 1D). The "γ/2" was probably mis-named — the actual rotation rate γ doesn't enter the translation rates. Default: use 1/6 ± ε for triangular forward/backward bias.
+8. **Lattice parametrization** — Dipanjan used $a = b = 1$ which gives Cartesian NN lengths $(2, \sqrt{2}, \sqrt{2})$. **Corrected (2026-05-11): this is a deliberate parametrization choice, not a bug.** The Confinement draft Fig 1 uses these exact coordinates. Topologically equivalent to true 60°-isotropic ($\mathbf{a}_1 = (1, 0)$, $\mathbf{a}_2 = (1/2, \sqrt{3}/2)$). Either works; pick one and stick with it. Recommend: **use Dipanjan's $(2a, 0), (a, b), (a, -b)$ convention** for algebra and the isotropic triangular display only for plotting.
+9. **Anshuman's contact** — Anshuman Pandey? Anshuman Kumar? Don't know. **Plan:** ask Kabir or the group's mailing list for contact. Useful for PBC code reference but not blocking.
+10. **Which chirality convention to do FIRST** — JMVR-style (translation bias) is now the primary track (Track A). TCRW-style (rotation bias) is Track B, secondary.
+11. **PBC verification** — no longer the leading bug hypothesis, but still important. Build a finite real-space generator on a small triangular torus and compare its block spectrum to the corrected Bloch spectrum at discrete momenta.
 
 ---
 
@@ -550,10 +620,11 @@ Two distinct possible papers come out of this work — pursue whichever Track su
 
 **Abstract sketch:**
 1. Mandal-Barma-Ramola 2021 (unpublished draft) studied confinement-enhanced clustering for active random walkers in 1D and on the 2D square lattice. The 2D triangular case was sketched but never completed.
-2. We fill in §IV.B (single walker, triangular) and §V (multi-walker clustering, triangular) of that draft.
-3. Closed-form (or numerically computed) occupation distribution $P(\mathbf{r}, t)$ on triangular for chirality $\epsilon \in [0, 1/6]$.
-4. Verify the non-monotonic clustering signature (1D Fig 2(d) of the draft) survives 6-fold geometry.
-5. Connect to JMVR 2022 (the published square-lattice version) and discuss the role of lattice symmetry.
+2. We correct a sign error in the triangular Bloch coefficient \(c_3\) and verify the corrected exact solution against \(10^8\)-walker KMC.
+3. We fill in §IV.B (single walker, triangular) and §V (multi-walker clustering, triangular) of that draft.
+4. Closed-form (or numerically computed) occupation distribution $P(\mathbf{r}, t)$ on triangular for chirality $\epsilon \in [0, 1/6]$.
+5. Verify the non-monotonic clustering signature (1D Fig 2(d) of the draft) survives 6-fold geometry.
+6. Connect to JMVR 2022 (the published square-lattice version) and discuss the role of lattice symmetry.
 
 This is the **natural completion** of an existing draft. Authors would likely include Mandal, Barma, Ramola, and you. **Probability of becoming a paper: high**, since it finishes work the group already started.
 

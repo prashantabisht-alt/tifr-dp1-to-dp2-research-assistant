@@ -1,9 +1,9 @@
 """
 Reproduce Dipanjan's Mathematica calculation, then plot it.
 
-This script is intentionally narrow:
-  1. Use the same parameters as rtp_tl_2.nb by default.
-  2. Compute P(x, y, t) from the exact Fourier-space generator.
+This script is intentionally narrow and historical:
+  1. Use the same parameters and old c3 sign as rtp_tl_2.nb by default.
+  2. Compute P(x, y, t) from Dipanjan's Fourier-space generator.
   3. Write the y = constant line cut that Dipanjan printed.
   4. Plot that line cut and a full real-space probability heatmap.
 
@@ -18,7 +18,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
-from triangular_active_walker import build_Mk
+from triangular_jmvr_corrected import build_Mk_dipanjan
 
 
 def evolve_fourier_grid(
@@ -50,7 +50,7 @@ def evolve_fourier_grid(
         kx = 2.0 * np.pi * nx / (2.0 * a * L)
         for ny in range(ny_count):
             ky = 2.0 * np.pi * ny / (b * L)
-            M = build_Mk(gamma, epsilon, kx, ky, a=a, b=b)
+            M = build_Mk_dipanjan(gamma, epsilon, kx, ky, a=a, b=b)
             evals, evecs = np.linalg.eig(M)
 
             init = np.full(6, 1.0 / 6.0, dtype=complex)

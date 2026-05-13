@@ -1,31 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import permutations
+from pathlib import Path
+
+from triangular_jmvr_corrected import build_Mk_corrected, build_Mk_dipanjan
 
 
 def build_Mk(gamma, epsilon, k1, k2, a=1.0, b=1.0):
-    if abs(epsilon) > 1.0 / 6.0:
-        raise ValueError("epsilon must satisfy |epsilon|<=1/6")
-
-    B = (1.0 / 3.0) * (
-        np.cos(2.0 * a * k1)
-        + np.cos(a * k1 + b * k2)
-        + np.cos(a * k1 - b * k2)
-    )
-
-    c1 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(2.0 * a * k1)
-    c2 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(a * k1 + b * k2)
-    c3 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(a * k1 - b * k2)
-
-    M = np.zeros((6, 6), dtype=complex)
-    diag = [c1, c2, c3, np.conj(c1), np.conj(c2), np.conj(c3)]
-    for d, value in enumerate(diag):
-        M[d, d] = value
-    for src in range(6):
-        M[(src + 1) % 6, src] += gamma / 2.0
-        M[(src - 1) % 6, src] += gamma / 2.0
-
-    return M
+    """Default JMVR triangular generator: corrected c3 sign."""
+    return build_Mk_corrected(gamma, epsilon, k1, k2, a, b)
 
 
 def match_eigenvalues(prev_vals, vals):
@@ -42,6 +25,8 @@ def match_eigenvalues(prev_vals, vals):
 
 
 def plot_band_line(gamma=0.01, epsilon=0.15, npts=300, outfile="band_line.png", tracked=True):
+    outfile = Path(outfile)
+    outfile.parent.mkdir(parents=True, exist_ok=True)
     k1s = np.linspace(0.0, 2.0 * np.pi, npts)
     eigvals = np.zeros((npts, 6), dtype=complex)
 
@@ -122,7 +107,7 @@ def run_sanity_tests():
     )
     c1 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(2.0 * a * k1)
     c2 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(a * k1 + b * k2)
-    c3 = B - 1.0 - gamma + 2.0j * epsilon * np.sin(a * k1 - b * k2)
+    c3 = B - 1.0 - gamma - 2.0j * epsilon * np.sin(a * k1 - b * k2)
 
     expected_diag = np.array([c1, c2, c3, np.conj(c1), np.conj(c2), np.conj(c3)])
     actual_diag = np.diag(M)
@@ -130,8 +115,13 @@ def run_sanity_tests():
     print("max diagonal mismatch =")
     print(np.max(np.abs(actual_diag - expected_diag)))
 
+    print("\nDipanjan comparison at k=(0.3,0.4)")
+    M_old = build_Mk_dipanjan(gamma, epsilon, k1, k2, a, b)
+    print("max |corrected - Dipanjan| =")
+    print(np.max(np.abs(M - M_old)))
+
 
 if __name__ == "__main__":
     run_sanity_tests()
-    plot_band_line(gamma=0.01, epsilon=0.0, outfile="band_line_eps0_tracked.png")
-    plot_band_line(gamma=0.01, epsilon=0.15, outfile="band_line_eps015_tracked.png")
+    plot_band_line(gamma=0.01, epsilon=0.0, outfile="outputs/band_line_eps0_tracked.png")
+    plot_band_line(gamma=0.01, epsilon=0.15, outfile="outputs/band_line_eps015_tracked.png")
