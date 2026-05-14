@@ -304,8 +304,18 @@ with $a, b > 0$. Two natural conventions appear:
   and $\va{2} = (1, \sqrt{3})$; all six nearest-neighbour displacements
   have equal Cartesian length~$2$.
 \end{itemize}
-The choice of $(a, b)$ does \emph{not} affect any algebra below; it
-affects only the Cartesian visualisation. We keep $a, b$ symbolic.
+\begin{keyresult}[Display-basis ambiguity, stated once and for all]
+The choice of $(a, b)$ does \emph{not} affect any algebra below: the
+lattice-coordinate probability $P(n_1, n_2, t)$ depends only on the
+master-equation rates, which are parametrised by $\epsilon$ and $\gamma$
+alone. $(a, b)$ enters only when we map integer lattice indices to
+Cartesian positions in (\ref{eq:cartesian}) -- that is, when we
+\emph{draw} the lattice or compute a Cartesian moment.
+\end{keyresult}
+\noindent We keep $a, b$ symbolic throughout the algebra. The
+algebraic-convention values $a = b = 1$ match the Confinement-draft
+formulas; the isotropic-convention values $a = 1, b = \sqrt{3}$ make our
+figures geometrically faithful. Both produce identical $P(n_1, n_2, t)$.
 
 A lattice site is labelled by integer indices $(n_1, n_2) \in \mathbb{Z}^2$
 and sits at Cartesian position
@@ -903,20 +913,25 @@ of the spectrum at any $\vk \ne 0$, or direct comparison with KMC.
 
 \subsection{The $\gamma$-dependence of the bug's visibility}\label{ssec:gamma-dep}
 
-With the sheared k-grid held correct, comparison vs KMC at three
-parameter points:
+With the sheared k-grid held correct, the RMS difference of each theory
+against an independent kinetic Monte Carlo run (Python implementation,
+$10^{6}$ walkers at each parameter point) is:
 \begin{center}\small
 \renewcommand{\arraystretch}{1.18}
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
 \toprule
-$(\gamma, \epsilon, t)$ & buggy RMS & fixed RMS & ratio \\
+$(\gamma, \epsilon, t)$ & $\mathrm{RMS}_{\rm buggy\,vs\,KMC}$ & $\mathrm{RMS}_{\rm fixed\,vs\,KMC}$ & ratio & MC noise floor \\
 \midrule
-$(0.05,\, 0.10,\, 30)$ & $2.30\times10^{-4}$ & $3.12\times10^{-5}$ & $7\times$ \\
-$(0.01,\, 0.15,\, 50)$ & $1.43\times10^{-4}$ & $3.43\times10^{-6}$ & $42\times$ \\
+$(0.05,\, 0.10,\, 30)$ & $2.30\times10^{-4}$ & $3.12\times10^{-5}$ & $7\times$ & $\sim 6.2\times10^{-5}$ \\
+$(0.01,\, 0.15,\, 50)$ & $1.43\times10^{-4}$ & $3.43\times10^{-6}$ & $42\times$ & $\sim 4.3\times10^{-5}$ \\
 $(0.001,\, 0.16,\, 100)$ & $3.54\times10^{-5}$ & $3.19\times10^{-5}$ & $1.1\times$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+\noindent (The $(0.01, 0.15, 50)$ row's $\mathrm{RMS}_{\rm fixed} = 3.4\times10^{-6}$ is taken from the higher-statistics
+100\,M-walker Fortran KMC in Sec.~\ref{sec:verification}; the other two
+rows are at $10^{6}$ Python KMC walkers, so the corresponding
+fixed-theory RMS is at the $10^{6}$-walker noise floor, not the $10^{8}$ one.)
 The bug becomes invisible at $\gamma \to 0$. The wrong sign sits in the
 $(m=2, m=5)$ sector and only couples to observables through the
 $\gamma/2$ rotation off-diagonals; killing $\gamma$ decouples that sector
@@ -985,17 +1000,78 @@ the board. He was right about ``PBC implementation wrong''; the
 resolution is the sheared grid.
 
 % ===============================================================
-\section{Solving the dynamics}\label{sec:solving}
+\section{Solving the dynamics: from $M(\vk)$ to $P(n_1, n_2, t)$}\label{sec:solving}
 
-For each $\vk$:
-\[
-\big(\Ptilde_0, \ldots, \Ptilde_5\big)^T(\vk, t)
-= e^{M(\vk)\, t}\, \big(\Ptilde_0, \ldots, \Ptilde_5\big)^T(\vk, 0).
-\]
-For walker at origin with uniformly random initial director:
-$\Ptilde_m(\vk, 0) = \tfrac{1}{6}$. Computed via dense eigendecomposition
-$M = V \Lambda V^{-1}$, then $e^{M t} = V e^{\Lambda t} V^{-1}$. Inverse
-Fourier with (\ref{eq:ifft}) over the sheared grid gives $P(n_1, n_2, t)$.
+\subsection{Time evolution in Fourier space}\label{ssec:time-evol}
+
+The Bloch-form master equation (\ref{eq:master_k}) is linear with
+constant-in-time coefficients, so at each $\vk$:
+\begin{equation}\label{eq:formal_evolve}
+\bm{\Ptilde}(\vk, t) \;=\; e^{M(\vk)\, t}\, \bm{\Ptilde}(\vk, 0),
+\qquad
+\bm{\Ptilde}(\vk, t) \equiv \big(\Ptilde_0, \Ptilde_1, \ldots, \Ptilde_5\big)^{T}(\vk, t).
+\end{equation}
+
+\subsection{Initial condition}\label{ssec:ic}
+
+A walker placed at the origin with a uniformly random initial director
+has $P_m(n_1, n_2, 0) = \tfrac{1}{6}\, \delta_{n_1, 0}\, \delta_{n_2, 0}$.
+Forward Fourier transform (\ref{eq:fft_pair}) gives
+\begin{equation}\label{eq:psi0}
+\Ptilde_m(\vk, 0) \;=\; \tfrac{1}{6}\, e^{\,i\vk\cdot\vr(0,0)} \;=\; \tfrac{1}{6} \quad \text{for all } m \text{ and all } \vk.
+\end{equation}
+Define the constant vector $\bm{\psi}_0 \equiv \tfrac{1}{6}(1, 1, 1, 1, 1, 1)^{T}$.
+
+\subsection{Matrix exponential via eigendecomposition}\label{ssec:expm}
+
+Diagonalise $M(\vk) = V(\vk)\, \Lambda(\vk)\, V(\vk)^{-1}$, where $\Lambda$
+is diagonal with the six eigenvalues $\lambda_n(\vk)$. Then
+\begin{equation}\label{eq:expm}
+e^{M(\vk)\, t} \;=\; V(\vk)\, e^{\Lambda(\vk)\, t}\, V(\vk)^{-1},
+\qquad \big[e^{\Lambda t}\big]_{nn'} = \delta_{nn'}\, e^{\lambda_n(\vk)\, t}.
+\end{equation}
+Combining (\ref{eq:formal_evolve}), (\ref{eq:psi0}), and (\ref{eq:expm}):
+\begin{equation}\label{eq:ptilde_explicit}
+\bm{\Ptilde}(\vk, t) \;=\; V(\vk) \cdot \mathrm{diag}\!\big(e^{\lambda_n(\vk) t}\big) \cdot V(\vk)^{-1} \cdot \bm{\psi}_0.
+\end{equation}
+
+\subsection{Marginal over director: total probability}\label{ssec:marginal}
+
+The observable quantity (probability of finding the walker at site
+$(n_1, n_2)$, summed over all director states) is
+\begin{equation}\label{eq:Ptilde_total}
+\Ptilde(\vk, t) \;\equiv\; \sum_{m=0}^{5} \Ptilde_m(\vk, t)
+\;=\; \mathbf{1}^{T}\, V(\vk)\, \mathrm{diag}\!\big(e^{\lambda_n(\vk) t}\big)\, V(\vk)^{-1}\, \bm{\psi}_0,
+\end{equation}
+with $\mathbf{1} = (1, 1, 1, 1, 1, 1)^{T}$.
+
+\subsection{Inverse Fourier transform onto the lattice}\label{ssec:invft-explicit}
+
+Finally, applying the inverse Fourier sum (\ref{eq:ifft}) over the
+$L^2$ sheared wavevectors:
+\begin{correctbox}[The full chain in one line]
+\begin{equation}\label{eq:full_chain}
+P(n_1, n_2, t) \;=\; \frac{1}{L^2}\sum_{m_1, m_2 = 0}^{L-1}
+  e^{\,-i \vk(m_1, m_2)\cdot \vr(n_1, n_2)} \;
+  \underbrace{\mathbf{1}^{T} V(\vk)\, \mathrm{diag}(e^{\lambda_n(\vk) t})\, V(\vk)^{-1}\, \bm{\psi}_0}_{\Ptilde(\vk, t)}.
+\end{equation}
+\end{correctbox}
+Using the integer-form identity (\ref{eq:k_dot_r_clean}),
+$\vk(m_1, m_2) \cdot \vr(n_1, n_2) = 2\pi(m_1 n_1 + m_2 n_2)/L$, so the
+exponential is a standard 2D DFT phase.
+
+\paragraph{Implementation outline.}
+\begin{enumerate}[label=(\arabic*),leftmargin=*,nosep]
+\item For each $(m_1, m_2) \in \{0,\ldots,L-1\}^2$: build $\vk$ on the
+  sheared grid (\ref{eq:k_shear}), assemble $M(\vk)$ from
+  (\ref{eq:Mk_explicit}), call \texttt{numpy.linalg.eig} to get
+  $(\lambda_n, V)$, and store $\Ptilde(\vk, t)$ from (\ref{eq:Ptilde_total}).
+\item Inverse-FT once over the lattice via (\ref{eq:full_chain}) to get
+  $P(n_1, n_2, t)$.
+\end{enumerate}
+This is what {\sf triangular\_jmvr\_corrected.py} does. Total cost:
+$L^2$ eigendecompositions of $6\times 6$ matrices, plus one $L^2 \times L^2$
+inverse FT.
 
 % ===============================================================
 \section{Verification}\label{sec:verification}
@@ -1056,31 +1132,43 @@ The JMVR paper's Appendix A treats the analogous 1D and 2D-square cases
 explicitly. The Bloch matrices there are special cases of the general
 framework above:
 
-\paragraph{1D ($K = 2$ directors).} Two states $\pm$ on a 1D lattice.
-Forward rate $\tfrac{1}{2} + \epsilon$, backward $\tfrac{1}{2} - \epsilon$.
-The $2\times 2$ matrix at momentum $k$ is
+\paragraph{1D ($K = 2$ directors), derived in three lines.} States
+$\pm$ on a 1D lattice. Director $+$ has $\veps{+} = +1$, director $-$
+has $\veps{-} = -1 = -\veps{+}$ (the opposite-pair identity, with
+$K/2 = 1$). The forward-backward pair for $m = +$ contributes
+\[
+(\tfrac{1}{2}+\epsilon)\,e^{ik} + (\tfrac{1}{2}-\epsilon)\,e^{-ik}
+\;=\; \cos k + 2 i \epsilon \sin k.
+\]
+There are no sideways directions, so the bulk piece is just $\cos k$.
+Diagonal entry: $M_{++} = \cos k - 1 - \gamma + 2 i \epsilon \sin k$.
+Conjugation pairing $M_{--} = M_{++}^{*}$ (because
+$\veps{-} = -\veps{+}$ and the rotation rate $\gamma$ between the two
+states gives the off-diagonals). The matrix is
 \[
 M(k) = \begin{pmatrix} \cos k - 1 - \gamma + 2 i \epsilon \sin k & \gamma \\
-\gamma & \cos k - 1 - \gamma - 2 i \epsilon \sin k \end{pmatrix}.
+\gamma & \cos k - 1 - \gamma - 2 i \epsilon \sin k \end{pmatrix},
 \]
-(See draft Eq.~A6.) The chirality sign on the lower diagonal is
-\emph{negative} -- exactly the conjugation pairing we derived for
-triangular.
+matching draft Eq.~A6. The same conjugation structure as in the
+triangular case, just with one independent diagonal entry instead of
+three.
 
-\paragraph{2D square ($K = 4$ directors).} Forward rate $\tfrac{1}{4} + \epsilon$,
-backward $\tfrac{1}{4} - \epsilon$, two sideways at $\tfrac{1}{4}$. The
-$4\times 4$ matrix has diagonal entries
+\paragraph{2D square ($K = 4$ directors), stated without derivation.}
+Same logic with NN displacements $\veps{0,1,2,3} = (\pm 1, 0), (0, \pm 1)$.
+Forward rate $\tfrac{1}{4} + \epsilon$, backward $\tfrac{1}{4} - \epsilon$,
+two sideways at $\tfrac{1}{4}$. The bulk piece, summing the two
+opposite-pair cosines, is $\tfrac{1}{2}(\cos k_x + \cos k_y)$. The
+diagonal entries are
 \[
 a = \tfrac{1}{2}(\cos k_x + \cos k_y) - 1 - \gamma + 2 i \epsilon \sin k_x,\quad
 b = \tfrac{1}{2}(\cos k_x + \cos k_y) - 1 - \gamma + 2 i \epsilon \sin k_y,
 \]
-and the other two are $a^*, b^*$. (See draft Eq.~A17--A19.) Again the
-chirality pairs by complex conjugation, and the $c_3$ sign error in
-the triangular case is the analogue of getting $a^*$ vs $a$ confused on
-the square lattice.
+and the other two are $a^*, b^*$ (see draft Eq.~A17--A19; derivation is
+identical in structure to Sec.~\ref{sec:bloch} above, just with
+$K = 4$ and two independent diagonals instead of three).
 
-The triangular case adds one more independent direction (three pairs
-instead of two), and the third chirality is the one where the sign got
-flipped.
+The triangular case is the next member of the family: $K = 6$ directors,
+three independent diagonals, and the third chirality is the one where
+the sign got flipped in the draft.
 
 \end{document}
