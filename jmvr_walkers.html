@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JMVR walkers — interactive</title>
+<style>
+:root {
+  --bg: #0f0f12;
+  --panel: #1a1a1f;
+  --border: rgba(255,255,255,0.08);
+  --text: #f2f2f0;
+  --muted: #8a8a86;
+  --accent: #b78aff;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  margin: 0; padding: 24px;
+  background: var(--bg); color: var(--text);
+}
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px 18px;
+  align-items: center;
+  background: var(--panel);
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  max-width: 760px;
+  margin-bottom: 24px;
+}
+.controls label { font-size: 14px; color: var(--muted); }
+.controls input[type=range] { width: 100%; accent-color: var(--accent); }
+.controls .val { font-size: 14px; font-weight: 500; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+.btnrow {
+  grid-column: 1 / -1;
+  display: flex; gap: 10px; padding-top: 6px;
+}
+button {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+button:hover { background: rgba(255,255,255,0.04); }
+button.primary {
+  background: var(--accent); color: #1a1a1f; border-color: transparent; font-weight: 500;
+}
+button.primary:hover { background: #c89eff; }
+.panels {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 900px;
+}
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.panel h2 { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+.panel .descr { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+canvas { width: 100%; height: auto; display: block; background: #000; border-radius: 6px; }
+.footer { color: var(--muted); font-size: 12px; margin-top: 18px; max-width: 900px; line-height: 1.6; }
+.note { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>JMVR active walkers — live</h1>
+<div class="sub">Each dot is one walker, continuous-time KMC. Trails fade. Square (4 directors) vs triangular (6 directors).</div>
+
+<div class="controls">
+  <label for="g">γ rotation rate</label>
+  <input id="g" type="range" min="0.001" max="0.5" step="0.001" value="0.02">
+  <span class="val" id="gv">0.020</span>
+
+  <label for="e">ε chirality</label>
+  <input id="e" type="range" min="0" max="0.24" step="0.005" value="0.15">
+  <span class="val" id="ev">0.150</span>
+
+  <label for="n">walkers</label>
+  <input id="n" type="range" min="1" max="200" step="1" value="40">
+  <span class="val" id="nv">40</span>
+
+  <label for="s">speed</label>
+  <input id="s" type="range" min="1" max="200" step="1" value="50">
+  <span class="val" id="sv">50</span>
+
+  <div class="btnrow">
+    <button id="play" class="primary">Pause</button>
+    <button id="reset">Reset positions</button>
+    <button id="trail">Toggle trails</button>
+  </div>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <h2>Square lattice</h2>
+    <div class="descr">4 directors. Rotation γ/2 to neighbouring director, chirality ε biases forward hop.</div>
+    <canvas id="sq" width="320" height="320"></canvas>
+  </div>
+  <div class="panel">
+    <h2>Triangular lattice</h2>
+    <div class="descr">6 directors. Same rates with 1/6 baseline. ε caps at 1/6 (≈ 0.167) for non-negative back rate.</div>
+    <canvas id="tr" width="320" height="320"></canvas>
+  </div>
+</div>
+
+<div class="footer">
+  Each walker is one realisation of the continuous-time KMC. With many walkers, the cloud profile approaches P(x, y, t).
+  <span class="note">Try this:</span> drop γ to 0.005 and pull ε to its max — directors persist, walkers shoot in straight lines along the lattice axes, giving the 4 or 6 ballistic rays.
+  Crank γ to 0.3 with ε ≈ 0 — directors randomise fast, walkers spread isotropically (square Gaussian / round hexagonal).
+</div>
+
+<script>
+const L_SQ = 60;          // square lattice size
+const L_TR = 60;          // triangular lattice size
+const PAD = 8;            // canvas padding in pixels
+
+// 4 square director displacements: +x, +y, -x, -y
+const SQ_NN = [[1,0],[0,1],[-1,0],[0,-1]];
+// 6 triangular director displacements (lattice coords)
+const TR_NN = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
+
+const STATE = {
+  gamma: 0.02,
+  eps: 0.15,
+  nWalkers: 40,
+  speed: 50,
+  paused: false,
+  trails: true,
+  walkersSq: [],
+  walkersTr: [],
+};
+
+function makeWalkers(L, K) {
+  const arr = [];
+  for (let i = 0; i < STATE.nWalkers; i++) {
+    arr.push({
+      n1: Math.floor(L / 2),
+      n2: Math.floor(L / 2),
+      m: Math.floor(Math.random() * K),
+      hue: Math.floor((360 * i) / STATE.nWalkers),
+    });
+  }
+  return arr;
+}
+
+function resetWalkers() {
+  STATE.walkersSq = makeWalkers(L_SQ, 4);
+  STATE.walkersTr = makeWalkers(L_TR, 6);
+}
+
+function mod(x, n) { return ((x % n) + n) % n; }
+
+// Advance one walker by one event (rotation or translation)
+function stepWalker(w, K, NN, eps, gamma) {
+  const totalRate = 1 + gamma;
+  if (Math.random() < gamma / totalRate) {
+    // rotation: +1 or -1 mod K, each with prob 1/2
+    w.m = mod(w.m + (Math.random() < 0.5 ? 1 : -1), K);
+  } else {
+    // translation: choose direction d
+    // rates: forward (d=m) = 1/K + eps; backward (d = (m+K/2) mod K) = 1/K - eps;
+    // sideways = 1/K each. Total = 1.
+    const u = Math.random();
+    const forwardRate = 1 / K + eps;
+    const backwardRate = 1 / K - eps;
+    const sideRate = 1 / K;
+    let acc = 0;
+    let d = 0;
+    for (d = 0; d < K; d++) {
+      let r;
+      if (d === w.m) r = forwardRate;
+      else if (d === mod(w.m + K/2, K)) r = backwardRate;
+      else r = sideRate;
+      acc += r;
+      if (u <= acc) break;
+    }
+    if (d >= K) d = K - 1;
+    w.n1 = mod(w.n1 + NN[d][0], (K === 4 ? L_SQ : L_TR));
+    w.n2 = mod(w.n2 + NN[d][1], (K === 4 ? L_SQ : L_TR));
+  }
+}
+
+function drawSquare(ctx, walkers, w, h) {
+  const L = L_SQ;
+  const size = Math.min(w, h) - 2 * PAD;
+  const cell = size / L;
+  if (STATE.trails) {
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+  }
+  for (const wlk of walkers) {
+    const x = PAD + (wlk.n1 + 0.5) * cell;
+    const y = h - PAD - (wlk.n2 + 0.5) * cell;
+    ctx.fillStyle = `hsl(${wlk.hue}, 80%, 65%)`;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(1.5, cell * 0.35), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawTriangle(ctx, walkers, w, h) {
+  const L = L_TR;
+  // Parallelogram extent: x in [0, 2L + L], y in [0, sqrt(3) * L]
+  // To fit nicely, scale x by 1/3, y by 1/(sqrt(3)) of available
+  const xMax = 2 * L + L;
+  const yMax = Math.sqrt(3) * L;
+  const sx = (w - 2 * PAD) / xMax;
+  const sy = (h - 2 * PAD) / yMax;
+  const s = Math.min(sx, sy);
+  if (STATE.trails) {
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, w, h);
+  }
+  for (const wlk of walkers) {
+    const xc = 2 * wlk.n1 + wlk.n2;
+    const yc = Math.sqrt(3) * wlk.n2;
+    const x = PAD + xc * s;
+    const y = h - PAD - yc * s;
+    ctx.fillStyle = `hsl(${wlk.hue}, 80%, 65%)`;
+    ctx.beginPath();
+    ctx.arc(x, y, Math.max(1.5, s * 0.7), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function step() {
+  const eventsPerWalker = Math.max(1, Math.floor(STATE.speed / 8));
+  for (const w of STATE.walkersSq) {
+    for (let i = 0; i < eventsPerWalker; i++) stepWalker(w, 4, SQ_NN, STATE.eps, STATE.gamma);
+  }
+  for (const w of STATE.walkersTr) {
+    for (let i = 0; i < eventsPerWalker; i++) stepWalker(w, 6, TR_NN, STATE.eps, STATE.gamma);
+  }
+}
+
+const sqCanvas = document.getElementById('sq');
+const trCanvas = document.getElementById('tr');
+const sqCtx = sqCanvas.getContext('2d');
+const trCtx = trCanvas.getContext('2d');
+
+function frame() {
+  if (!STATE.paused) step();
+  drawSquare(sqCtx, STATE.walkersSq, sqCanvas.width, sqCanvas.height);
+  drawTriangle(trCtx, STATE.walkersTr, trCanvas.width, trCanvas.height);
+  requestAnimationFrame(frame);
+}
+
+function syncControls() {
+  document.getElementById('gv').textContent = STATE.gamma.toFixed(3);
+  document.getElementById('ev').textContent = STATE.eps.toFixed(3);
+  document.getElementById('nv').textContent = STATE.nWalkers;
+  document.getElementById('sv').textContent = STATE.speed;
+}
+
+document.getElementById('g').addEventListener('input', e => { STATE.gamma = +e.target.value; syncControls(); });
+document.getElementById('e').addEventListener('input', e => {
+  const v = +e.target.value;
+  // Triangular needs eps <= 1/6, but visually let user push past — clamp internally for triangular only via min there
+  STATE.eps = v;
+  syncControls();
+});
+document.getElementById('n').addEventListener('input', e => {
+  STATE.nWalkers = +e.target.value;
+  resetWalkers();
+  syncControls();
+});
+document.getElementById('s').addEventListener('input', e => { STATE.speed = +e.target.value; syncControls(); });
+document.getElementById('play').addEventListener('click', e => {
+  STATE.paused = !STATE.paused;
+  e.target.textContent = STATE.paused ? 'Play' : 'Pause';
+});
+document.getElementById('reset').addEventListener('click', resetWalkers);
+document.getElementById('trail').addEventListener('click', () => { STATE.trails = !STATE.trails; });
+
+resetWalkers();
+syncControls();
+frame();
+</script>
+</body>
+</html>

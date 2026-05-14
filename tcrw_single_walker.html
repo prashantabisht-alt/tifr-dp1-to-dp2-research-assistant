@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TCRW single walker — trajectory</title>
+<style>
+:root {
+  --bg: #0f0f12;
+  --panel: #1a1a1f;
+  --border: rgba(255,255,255,0.08);
+  --text: #f2f2f0;
+  --muted: #8a8a86;
+  --accent: #5db4ff;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  margin: 0; padding: 24px;
+  background: var(--bg); color: var(--text);
+}
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+.sub { color: var(--muted); font-size: 14px; margin-bottom: 24px; max-width: 980px; }
+.controls {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px 18px;
+  align-items: center;
+  background: var(--panel);
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  max-width: 760px;
+  margin-bottom: 16px;
+}
+.controls label { font-size: 14px; color: var(--muted); }
+.controls input[type=range] { width: 100%; accent-color: var(--accent); }
+.controls .val { font-size: 14px; font-weight: 500; min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
+.btnrow {
+  grid-column: 1 / -1;
+  display: flex; gap: 10px; padding-top: 6px; flex-wrap: wrap;
+}
+button {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 14px; font-size: 13px;
+  border-radius: 8px; cursor: pointer;
+  font-family: inherit;
+}
+button:hover { background: rgba(255,255,255,0.04); }
+button.primary {
+  background: var(--accent); color: #1a1a1f; border-color: transparent; font-weight: 500;
+}
+button.primary:hover { background: #7fc4ff; }
+button.preset {
+  background: rgba(93,180,255,0.08); border-color: rgba(93,180,255,0.3); font-size: 12px; padding: 6px 10px;
+}
+.presets { max-width: 760px; margin-bottom: 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.presets .label { font-size: 12px; color: var(--muted); margin-right: 4px; }
+.panels {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 1020px;
+}
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.panel h2 { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+.panel .descr { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px; font-size: 12px; color: var(--muted); margin-top: 10px;
+}
+.stats .v { color: var(--text); font-weight: 500; font-variant-numeric: tabular-nums; }
+canvas { width: 100%; height: auto; display: block; background: #050505; border-radius: 6px; }
+.footer { color: var(--muted); font-size: 12px; margin-top: 18px; max-width: 1020px; line-height: 1.6; }
+.note { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>TCRW single-walker trajectory</h1>
+<div class="sub">
+  Topological Chiral Random Walk (Osat–Speck style): chirality lives in <i>rotation</i>, not translation.
+  Walker translates deterministically forward in its current director at rate 1. Rotation event at rate D<sub>r</sub>;
+  given rotation, CW with probability ω, CCW with probability 1 − ω.
+  ω = 0.5 ⇒ achiral. ω → 0 or 1 ⇒ maximal chirality.
+</div>
+
+<div class="controls">
+  <label for="dr">D<sub>r</sub> (rotation rate)</label>
+  <input id="dr" type="range" min="0" max="2" step="0.005" value="0.1">
+  <span class="val" id="drv">0.100</span>
+
+  <label for="w">ω (rotation chirality)</label>
+  <input id="w" type="range" min="0" max="1" step="0.005" value="0.5">
+  <span class="val" id="wv">0.500</span>
+
+  <label for="s">events/frame (auto play)</label>
+  <input id="s" type="range" min="1" max="40" step="1" value="6">
+  <span class="val" id="sv">6</span>
+
+  <div class="btnrow">
+    <button id="play" class="primary">Pause</button>
+    <button id="step">Step (1 event)</button>
+    <button id="step10">Step ×10</button>
+    <button id="reset">Reset walker</button>
+    <button id="clear">Clear trail</button>
+  </div>
+</div>
+
+<div class="presets">
+  <span class="label">Paper-like parameters:</span>
+  <button class="preset" data-dr="0.1"   data-w="0.50">Achiral: D<sub>r</sub>=0.1, ω=0.5</button>
+  <button class="preset" data-dr="0.1"   data-w="0.85">Moderate CW: D<sub>r</sub>=0.1, ω=0.85</button>
+  <button class="preset" data-dr="0.1"   data-w="1.00">Maximal CW: D<sub>r</sub>=0.1, ω=1.0</button>
+  <button class="preset" data-dr="0.02"  data-w="0.95">Long persistence: D<sub>r</sub>=0.02, ω=0.95</button>
+  <button class="preset" data-dr="0.5"   data-w="0.70">Diffusive chiral: D<sub>r</sub>=0.5, ω=0.7</button>
+</div>
+
+<div class="panels">
+
+  <div class="panel">
+    <h2>Square lattice</h2>
+    <div class="descr">4 directors: 0=+x, 1=+y, 2=−x, 3=−y. Translation always forward in director m.</div>
+    <canvas id="sq" width="440" height="440"></canvas>
+    <div class="stats">
+      <div>time<div class="v" id="sqT">0</div></div>
+      <div>events<div class="v" id="sqN">0</div></div>
+      <div>director<div class="v" id="sqM">+x</div></div>
+      <div>rotations<div class="v" id="sqR">0 CW / 0 CCW</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Triangular lattice</h2>
+    <div class="descr">6 directors aligned with the 6 NN axes. Translation always forward.</div>
+    <canvas id="tr" width="440" height="440"></canvas>
+    <div class="stats">
+      <div>time<div class="v" id="trT">0</div></div>
+      <div>events<div class="v" id="trN">0</div></div>
+      <div>director<div class="v" id="trM">d=0</div></div>
+      <div>rotations<div class="v" id="trR">0 CW / 0 CCW</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span class="note">How to read it:</span>
+  D<sub>r</sub> controls how often rotation happens; ω controls whether rotation prefers one chirality.
+  At ω = 0.5 the walker random-walks its director (no net circular tendency). At ω close to 0 or 1 the walker tends to turn in one
+  direction consistently, producing spiral / circulating trajectories. Compare with JMVR: this same chirality-from-rotation
+  is conceptually what makes TCRW topologically non-trivial on the square lattice — and the open research question is whether
+  that topology survives the 4-fold → 6-fold change.
+</div>
+
+<script>
+const STATE = {
+  Dr: 0.1,
+  omega: 0.5,
+  speed: 6,
+  paused: false,
+};
+
+const SQ_NN = [[1,0],[0,1],[-1,0],[0,-1]];
+const SQ_LABEL = ['+x','+y','−x','−y'];
+const TR_NN = [[1,0],[0,1],[-1,1],[-1,0],[0,-1],[1,-1]];
+
+function makeWalker(isTriangle) {
+  const w = {
+    n1: 0, n2: 0, m: 0,
+    t: 0, events: 0,
+    nCW: 0, nCCW: 0,
+    trail: [],
+    isTriangle,
+  };
+  w.trail.push([0, 0]);
+  return w;
+}
+
+let WSQ = makeWalker(false);
+let WTR = makeWalker(true);
+
+function mod(x, n) { return ((x % n) + n) % n; }
+
+function currentCartesian(w) {
+  if (w.isTriangle) return [2 * w.n1 + w.n2, Math.sqrt(3) * w.n2];
+  return [w.n1, w.n2];
+}
+
+function stepWalker(w, K, NN, Dr, omega) {
+  const totalRate = 1 + Dr;
+  w.t += -Math.log(1 - Math.random()) / totalRate;
+  w.events++;
+  if (Math.random() < Dr / totalRate) {
+    // Rotation event; CW (m -> m+1) with prob omega, CCW (m -> m-1) with prob 1-omega.
+    if (Math.random() < omega) {
+      w.m = mod(w.m + 1, K);
+      w.nCW++;
+    } else {
+      w.m = mod(w.m - 1, K);
+      w.nCCW++;
+    }
+  } else {
+    // Translation event: deterministic forward hop in current director m.
+    w.n1 += NN[w.m][0];
+    w.n2 += NN[w.m][1];
+    const [x, y] = currentCartesian(w);
+    w.trail.push([x, y]);
+    if (w.trail.length > 6000) w.trail.shift();
+  }
+}
+
+function drawSquareGrid(ctx, w, h, scale, cx, cy, walker) {
+  const [curX, curY] = currentCartesian(walker);
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  ctx.lineWidth = 0.5;
+  const span = Math.ceil(Math.max(w, h) / scale) + 4;
+  for (let i = -span; i <= span; i++) {
+    const xPos = cx + (Math.round(curX) + i - curX) * scale;
+    ctx.beginPath(); ctx.moveTo(xPos, 0); ctx.lineTo(xPos, h); ctx.stroke();
+  }
+  for (let i = -span; i <= span; i++) {
+    const yPos = cy - (Math.round(curY) + i - curY) * scale;
+    ctx.beginPath(); ctx.moveTo(0, yPos); ctx.lineTo(w, yPos); ctx.stroke();
+  }
+}
+
+function drawTriangleGrid(ctx, w, h, scale, cx, cy, walker) {
+  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+  ctx.lineWidth = 0.5;
+  const span = Math.ceil(Math.max(w, h) / scale) + 6;
+  for (let dn1 = -span; dn1 <= span; dn1++) {
+    for (let dn2 = -span; dn2 <= span; dn2++) {
+      const dx = 2 * dn1 + dn2;
+      const dy = Math.sqrt(3) * dn2;
+      const px = cx + dx * scale;
+      const py = cy - dy * scale;
+      if (px >= -8 && px <= w + 8 && py >= -8 && py <= h + 8) {
+        ctx.beginPath();
+        ctx.arc(px, py, 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  for (let dn1 = -span; dn1 <= span; dn1++) {
+    for (let dn2 = -span; dn2 <= span; dn2++) {
+      const px = cx + (2 * dn1 + dn2) * scale;
+      const py = cy - Math.sqrt(3) * dn2 * scale;
+      if (px < -8 || px > w + 8 || py < -8 || py > h + 8) continue;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + 2 * scale, py); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + scale, py - Math.sqrt(3) * scale); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - scale, py - Math.sqrt(3) * scale); ctx.stroke();
+    }
+  }
+}
+
+function drawTrail(ctx, w, scale, cx, cy) {
+  if (w.trail.length < 2) return;
+  const [curX, curY] = currentCartesian(w);
+  const N = w.trail.length;
+  for (let i = 1; i < N; i++) {
+    const [x0, y0] = w.trail[i - 1];
+    const [x1, y1] = w.trail[i];
+    const age = (N - i) / N;
+    const alpha = Math.max(0.08, 1 - age);
+    const hue = 205 + 30 * (1 - age);
+    ctx.strokeStyle = `hsla(${hue}, 80%, ${55 + 20*(1-age)}%, ${alpha})`;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(cx + (x0 - curX) * scale, cy - (y0 - curY) * scale);
+    ctx.lineTo(cx + (x1 - curX) * scale, cy - (y1 - curY) * scale);
+    ctx.stroke();
+  }
+}
+
+function drawWalker(ctx, cx, cy, scale, walker, NN) {
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+  ctx.fill();
+  const d = NN[walker.m];
+  let dx, dy;
+  if (walker.isTriangle) { dx = 2 * d[0] + d[1]; dy = Math.sqrt(3) * d[1]; }
+  else { dx = d[0]; dy = d[1]; }
+  const len = Math.sqrt(dx*dx + dy*dy);
+  const ux = dx / len, uy = dy / len;
+  const armLen = scale * 1.4;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx + ux * armLen, cy - uy * armLen);
+  ctx.stroke();
+  const ah = 7;
+  const angle = Math.atan2(-uy, ux);
+  ctx.beginPath();
+  ctx.moveTo(cx + ux * armLen, cy - uy * armLen);
+  ctx.lineTo(cx + ux * armLen - ah * Math.cos(angle - 0.4),
+             cy - uy * armLen + ah * Math.sin(angle - 0.4));
+  ctx.lineTo(cx + ux * armLen - ah * Math.cos(angle + 0.4),
+             cy - uy * armLen + ah * Math.sin(angle + 0.4));
+  ctx.closePath();
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+}
+
+function renderPanel(canvasId, walker, K, NN, scale) {
+  const c = document.getElementById(canvasId);
+  const ctx = c.getContext('2d');
+  const w = c.width, h = c.height;
+  const cx = w / 2, cy = h / 2;
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, w, h);
+  if (walker.isTriangle) drawTriangleGrid(ctx, w, h, scale, cx, cy, walker);
+  else drawSquareGrid(ctx, w, h, scale, cx, cy, walker);
+  drawTrail(ctx, walker, scale, cx, cy);
+  drawWalker(ctx, cx, cy, scale, walker, NN);
+}
+
+function syncControls() {
+  document.getElementById('drv').textContent = STATE.Dr.toFixed(3);
+  document.getElementById('wv').textContent = STATE.omega.toFixed(3);
+  document.getElementById('sv').textContent = STATE.speed;
+  document.getElementById('dr').value = STATE.Dr;
+  document.getElementById('w').value = STATE.omega;
+}
+
+function syncStats() {
+  document.getElementById('sqT').textContent = WSQ.t.toFixed(1);
+  document.getElementById('sqN').textContent = WSQ.events;
+  document.getElementById('sqM').textContent = SQ_LABEL[WSQ.m];
+  document.getElementById('sqR').textContent = WSQ.nCW + ' CW / ' + WSQ.nCCW + ' CCW';
+  document.getElementById('trT').textContent = WTR.t.toFixed(1);
+  document.getElementById('trN').textContent = WTR.events;
+  document.getElementById('trM').textContent = 'd=' + WTR.m;
+  document.getElementById('trR').textContent = WTR.nCW + ' CW / ' + WTR.nCCW + ' CCW';
+}
+
+function frame() {
+  if (!STATE.paused) {
+    for (let i = 0; i < STATE.speed; i++) {
+      stepWalker(WSQ, 4, SQ_NN, STATE.Dr, STATE.omega);
+      stepWalker(WTR, 6, TR_NN, STATE.Dr, STATE.omega);
+    }
+  }
+  renderPanel('sq', WSQ, 4, SQ_NN, 14);
+  renderPanel('tr', WTR, 6, TR_NN, 14);
+  syncStats();
+  requestAnimationFrame(frame);
+}
+
+document.getElementById('dr').addEventListener('input', e => { STATE.Dr = +e.target.value; syncControls(); });
+document.getElementById('w').addEventListener('input', e => { STATE.omega = +e.target.value; syncControls(); });
+document.getElementById('s').addEventListener('input', e => { STATE.speed = +e.target.value; syncControls(); });
+document.getElementById('play').addEventListener('click', e => {
+  STATE.paused = !STATE.paused;
+  e.target.textContent = STATE.paused ? 'Play' : 'Pause';
+});
+document.getElementById('step').addEventListener('click', () => {
+  STATE.paused = true;
+  document.getElementById('play').textContent = 'Play';
+  stepWalker(WSQ, 4, SQ_NN, STATE.Dr, STATE.omega);
+  stepWalker(WTR, 6, TR_NN, STATE.Dr, STATE.omega);
+});
+document.getElementById('step10').addEventListener('click', () => {
+  STATE.paused = true;
+  document.getElementById('play').textContent = 'Play';
+  for (let i = 0; i < 10; i++) {
+    stepWalker(WSQ, 4, SQ_NN, STATE.Dr, STATE.omega);
+    stepWalker(WTR, 6, TR_NN, STATE.Dr, STATE.omega);
+  }
+});
+document.getElementById('reset').addEventListener('click', () => {
+  WSQ = makeWalker(false);
+  WTR = makeWalker(true);
+});
+document.getElementById('clear').addEventListener('click', () => {
+  const [sx, sy] = currentCartesian(WSQ);
+  const [tx, ty] = currentCartesian(WTR);
+  WSQ.trail = [[sx, sy]];
+  WTR.trail = [[tx, ty]];
+});
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    STATE.Dr    = +btn.dataset.dr;
+    STATE.omega = +btn.dataset.w;
+    syncControls();
+  });
+});
+
+syncControls();
+frame();
+</script>
+</body>
+</html>
