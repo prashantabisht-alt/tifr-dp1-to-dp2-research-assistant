@@ -1,0 +1,20 @@
+==== Triangular JMVR KMC ====
+  gamma   =   0.0100   epsilon =   0.1500
+  t_final =    50.00   L =   60
+  walkers =     20000000
+  seed    = 20260515
+
+  walkers done:      2000000   cpu =      3.0 s
+  walkers done:      4000000   cpu =      6.1 s
+  walkers done:      6000000   cpu =      9.2 s
+  walkers done:      8000000   cpu =     12.3 s
+  walkers done:     10000000   cpu =     15.3 s
+  walkers done:     12000000   cpu =     18.4 s
+  walkers done:     14000000   cpu =     21.4 s
+  walkers done:     16000000   cpu =     24.5 s
+  walkers done:     18000000   cpu =     27.5 s
+  walkers done:     20000000   cpu =     30.6 s
+  ALL DONE in     30.6 s
+Saved kmc_triangular_counts_L60.txt
+  Sum counts =       20000000   (should equal n_walkers =     20000000
+)

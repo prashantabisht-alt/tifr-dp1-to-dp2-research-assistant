@@ -675,17 +675,24 @@ For the Track B exploration.
 \section{The headline figure}\label{sec:headline}
 
 \begin{center}
-\includegraphics[width=0.97\linewidth]{../fig11_final_hex.png}
+\includegraphics[width=0.97\linewidth]{../fig11_original_style_gnuplot.png}
 \end{center}
 {\small\color{neutral}
-The Confinement-2021 draft's Fig.~11 replacement.
+The Confinement-2021 draft's Fig.~11 replacement, rendered in the
+draft's exact gnuplot style on an $L = 60$ torus
+($2 \times 10^{7}$ walkers, no visible wrap-around at $t = 50$).
 (a) Corrected exact theory (sheared k-grid + fixed $c_3$).
-(b) Kinetic Monte Carlo at $10^8$ walkers (independent realisation).
-(c) Horizontal cross-section through the walker centre: KMC dots
-(black), corrected theory (blue) overlay each other; buggy theory
-(red) is visibly off in the centre depletion.
-The two heatmaps share the draft's black $\to$ purple $\to$ red $\to$
-yellow palette so the figure is drop-in compatible.}
+(b) Kinetic Monte Carlo. Both panels share the draft's
+black\,$\to$\,purple\,$\to$\,red\,$\to$\,yellow palette and the same
+hexagonal-circle pixel rendering, so the figure is drop-in compatible
+with the existing draft layout.
+(c) Off-centre horizontal cross-section showing the four-way forensic:
+KMC dots (black), the full original buggy theory (rect grid + buggy
+$c_3$, dashed purple), the buggy-$c_3$-only intermediate (red), and the
+corrected theory (blue) overlapping the KMC dots.
+Separately, an independent $L = 30$, $10^8$-walker Fortran KMC at the
+same parameters confirms the corrected theory at the MC noise floor
+(RMS $= 3.43 \times 10^{-6}$ vs floor $4.22 \times 10^{-6}$).}
 
 \vspace{4mm}
 \begin{keyresult}[Strongest verification]

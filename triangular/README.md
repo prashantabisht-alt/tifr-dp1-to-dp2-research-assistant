@@ -93,6 +93,24 @@ Outputs:
 - `fig11_final_hex_gnuplot.png`
 - `fig11_final_hex_gnuplot.pdf`
 
+Original-draft-style visual reproduction:
+
+```bash
+gfortran -O3 -fno-range-check -ffree-line-length-none kmc_triangular_jmvr_L60.f90 -o kmc_triangular_L60
+./kmc_triangular_L60 > kmc_L60_run.log
+python3 export_fig11_original_style_gnuplot_data.py
+gnuplot fig11_original_style.gnu
+```
+
+Outputs:
+
+- `fig11_original_style_gnuplot.png`
+- `fig11_original_style_gnuplot.pdf`
+
+This uses \(L=60\), not the \(L=30\) verification torus, so the active front
+has not visibly wrapped around the periodic boundary. That is why it reproduces
+the annular/hexagonal look of the original draft Fig. 11.
+
 ## Monte Carlo
 
 The Monte Carlo is Fortran, not Python.
@@ -124,12 +142,16 @@ exact matrix result.
 | `verify_realspace_bloch.py` | Finite real-space generator versus Bloch spectrum check |
 | `triangular_active_walker.py` | Lightweight sanity/band-line starter using the corrected matrix |
 | `kmc_triangular_jmvr.f90` | Fortran KMC implementation of the real-space master equation |
+| `kmc_triangular_jmvr_L60.f90` | L60 Fortran KMC used only for original-draft-style Fig. 11 visuals |
 | `mt.f90` | Random-number generator used by the Fortran KMC |
 | `run_kmc.sh` | Build/run helper for KMC |
 | `kmc_triangular_counts.txt` | Saved \(10^8\)-walker KMC counts |
+| `kmc_triangular_counts_L60.txt` | Saved \(2\times10^7\)-walker L60 KMC counts for original-style plotting |
 | `fig11_final_hex.py` | Final Python Fig. 11 replacement |
 | `export_fig11_final_hex_gnuplot_data.py` | Exports final `.txt` tables for gnuplot |
 | `fig11_final_hex.gnu` | Final full gnuplot Fig. 11 |
+| `export_fig11_original_style_gnuplot_data.py` | Exports L60 `.txt` tables for original-draft-style gnuplot |
+| `fig11_original_style.gnu` | Gnuplot script matching the old Fig. 11 annular/hexagonal visual convention |
 | `PI_NOTE_TWO_BUGS_AND_CHECKS.md` | PI-facing explanation of the k-grid/PBC and \(c_3\) sign corrections |
 | `TRIANGULAR_LATTICE_PLAN.md` | Research plan and remaining tasks |
 
