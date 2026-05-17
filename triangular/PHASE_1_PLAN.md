@@ -148,10 +148,28 @@ non-Hermitian whenever $\vec{k} \ne 0$.
 | 2 | Hargus, Epstein, Mandadapu, PRL 127, 178001 (2021) | The "odd diffusivity" tensor and its meaning | The antisymmetric part of $D_{ij}$ as chirality signature |
 | 3 | Sevilla, PRE 94, 062120 (2016) | Continuum chiral active particle | Continuum-limit cross-check formulas |
 | 4 | Osat, Meyberg, Metson, Speck arXiv:2602.12020 (TCRW) | Already read for Track-B context; refs 42–44 are the chiral-walker prior art | Edge-mode protocol; how the topological spectrum is computed |
+| 5 | Wójcik & Kalz, arXiv:2602.09920 (2026) | Closest modern square-lattice "chiral random walk" / odd-diffusion paper | What they already claim about odd diffusion, edge currents, and topology; how our triangular model differs |
+| 6 | Gilbert & Sanders, PRE 80, 041121 (2009) | Persistent random walk / triangular Lorentz-gas near miss | How persistence and triangular geometry enter diffusion; useful citation to avoid overclaiming |
+| 7 | Marris, Sarvaharman & Giuggioli (2023); Marris & Giuggioli (2024) | Persistent/anti-persistent lattice walks and first passage in domains | FPT methods and boundary-domain results relevant to our MFPT section |
+| 8 | Oropesa, de Castro, Löwen & Liarte, arXiv:2602.04732 (2026) | Triangular-lattice RTP-adjacent active matter on networks | Distinguish their trail-mediated triangular RTP from our clean single-particle chiral RTW |
 | -- | Whitelam-Klymko-Mandal, arXiv:1709.03951 (2017) | *Phase 2 reading* — multi-walker hard-core lattice ABP | Hard-core lattice rules; MIPS observable (defer until Phase 1 done) |
 
-**Action**: fetch (1), (2), (3) into the workspace as PDFs. Read (1)
-twice — once for model + observables, once for derivation tricks.
+**Action status (17 May 2026)**: the relevant PDFs are now collected in
+`triangular/papers/`, including the dangerous near-miss papers and the
+Panagiotopoulos JCP 2005 lattice hard-sphere reference for Phase 3.
+
+**Read first**: read Mallikarjun-Pal twice — once for model + observables,
+once for derivation tricks. Then do a quick novelty audit of Wójcik-Kalz,
+Gilbert-Sanders, and the Marris/Giuggioli papers before writing the first
+paragraph of the Phase-1 paper.
+
+**Priority-claim guardrail**: do not write "chiral random walk on triangular
+lattice has never been done" as a blanket statement. Papers exist with
+nearby titles and triangular persistent/chiral walks. The sharper claim is:
+we study the **active six-director rotation-chiral run-and-tumble walker on
+the triangular lattice**, and compute the transport, first-passage, and
+edge/localisation observables that refs 42-44 studied in square/continuum
+settings.
 
 Do not deep-read the hard-hexagon/equation-of-state papers during Phase 1.
 They motivate Phase 2/3, but the immediate deliverable is still the
