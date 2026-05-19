@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use these files, please cite them as below."
+authors:
+- family-names: "Mallikarjun"
+  given-names: "Rahul"
+title: "Chiral-Run-and-Tumble-Particle"
+date-released: 2022-09-11
+url: "https://github.com/RMStatMech/Chiral-Run-and-Tumble-Particle"
