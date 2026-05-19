@@ -11,13 +11,15 @@ These two define what's already known and what we're competing against
 for priority. Read both before any code.
 
 * **`Wojcik_Kalz_2026_chiral_random_walk_odd_diffusion.pdf`** —
-  arXiv:2602.09920, **published Feb 2026** (only three months before we
-  start). Square-lattice chiral random walker with internal director
-  and tunable chirality parameter $p$, interpolating from diffusive
-  random walk to deterministic quantum walk. They derive odd diffusion
-  and edge currents on the square lattice. Our Phase 1 is the
-  triangular extension — we cite them prominently, and the framing of
-  our paper is "square already done by Wójcik-Kalz; triangular is new."
+  arXiv:2602.09920, **published Feb 2026**. Square-lattice chiral random
+  walker with internal director and tunable chirality parameter $p$,
+  interpolating from diffusive random walk to deterministic quantum walk.
+  They derive odd diffusion and edge currents on the square lattice.
+  Important correction: this is a **discrete-time coin-step model**, not
+  our continuous-time RTW. We cite them prominently as the closest lattice
+  odd-diffusion/topological-edge reference; our Phase 1 is the
+  continuous-time triangular counterpart, not a literal extension of the
+  same dynamics.
 * **`ChiralActive_obstacle_lattices_NatComm_2024.pdf`** —
   Nature Communications, Feb 2024. Chiral active particle in
   *continuum*, navigating around square vs triangular obstacle lattices.
@@ -57,15 +59,38 @@ of refs 42-44.
   algebraic-area setting. This is mostly a title trap for us: cite only if
   needed to explain that our chirality is active-matter rotation chirality,
   not the same combinatorial/Hofstadter-style walk.
+* **`Ouvry_Polychronakos_2020_lattice_walk_area_combinatorics.pdf`**
+  — follow-up title trap. It explicitly discusses triangular lattice chiral
+  walks, but in algebraic-area enumeration / Hofstadter combinatorics, not
+  active RTW transport. Skim before making novelty claims around
+  "triangular chiral random walk."
+* **Larralde 1997, `Transport properties of a two-dimensional "chiral"
+  persistent random walk`** — historical chiral persistent-walk transport
+  paper. Not triangular/six-state, but important citation shield for the
+  general statement "chirality modifies persistent-walk transport."
+  **PDF not downloaded yet** (APS direct download returned 403).
+* **`Batchelor_Henry_2002_triangular_absorbing_boundaries.pdf`** —
+  exact triangular absorbing-boundary baseline. Not persistent or active,
+  but useful before writing our first-passage section.
+* **`Sarmiento_2025_first_passage_asymmetry_biased_RTP.pdf`** — modern FPT
+  asymmetry paper for biased RTPs. Relevant to our FPT/search section; not
+  triangular or C6.
+* **`Gilbert_Sanders_2010_multistep_persistent_walks_lattices.pdf`** —
+  multi-step persistent walk diffusion coefficients on lattices. Complements
+  the 2009 Gilbert-Sanders triangular Lorentz-gas paper already present.
+* **`Delplace_2020_topological_chiral_modes_random_scattering_networks.pdf`**
+  — optional topology/edge-mode analogy. Useful later if our OBC spectrum
+  discussion needs anomalous Floquet/scattering-network language.
 
 ### Direct templates we're extending
 
 Read in this order:
 
 1. **`Mallikarjun_Pal_2023_chiral_run_and_tumble_walker_ref44.pdf`**
-   — Ref 44 of TCRW. *The* template. 2D continuous space and time, 4
-   cardinal directions, transport + first-passage + optimal-search
-   bias. Our Phase 1 paper is the triangular version of this.
+   — Ref 44 of TCRW. 2D continuous space and continuous time, with four
+   cardinal director states, transport + first-passage + optimal-search
+   bias. This is the rate-mechanism and MFPT/search template, but it is
+   **not** a square-lattice walker and not a bit-match baseline.
 2. **`Hargus_Epstein_Mandadapu_2021_odd_diffusivity_chiral_ref42.pdf`**
    — Ref 42 of TCRW. The "odd diffusivity" antisymmetric tensor: the
    chirality signature in the diffusion tensor. We compute this on
@@ -80,6 +105,9 @@ edge-mode protocol):
 4. **`Osat_Meyberg_Metson_Speck_2026_TCRW.pdf`** — Osat-Speck topological
    chiral random walker. Square-lattice 4-director discrete-time model
    with topological edge modes. Refs 42–44 are inside.
+
+See also **`../LITERATURE_NOVELTY_AUDIT.md`** for the current strict
+novelty map and the list of missing citation-shield papers.
 
 ## Phase 2 — multi-walker hard-core on triangular (later)
 
@@ -118,22 +146,33 @@ edge-mode protocol):
 
 ## Still missing / optional
 
-- Nothing urgent for Phase 1. If Kabir sends more hard-hexagon or equation
-  of state notes, add them under Phase 3 rather than mixing them into the
-  single-walker chiral-RTW reading queue.
+- Still missing as a local PDF: Larralde 1997,
+  `Transport properties of a two-dimensional "chiral" persistent random
+  walk`. Keep it on the citation list; direct APS PDF download returned 403.
+- Optional if we need more bounded-domain methodology: Giuggioli 2020 PRX,
+  `Exact Spatiotemporal Dynamics of Confined Lattice Random Walks...`
+  (direct APS/Bristol PDF download returned 403).
+- If Kabir sends more hard-hexagon or equation-of-state notes, add them
+  under Phase 3 rather than mixing them into the single-walker chiral-RTW
+  reading queue.
 
 ## Reading priority right now (revised)
 
 Updated reading order based on the priority/novelty audit:
 
-1. **Wójcik-Kalz** (closest prior art, must know exactly what they did)
-2. **Mallikarjun-Pal** (direct template for observables)
+1. **Wójcik-Kalz** (closest lattice prior art, discrete-time coin-step;
+   must know exactly what they did)
+2. **Mallikarjun-Pal** (rate/MFPT template, but continuum not lattice)
 3. **Hargus-Epstein-Mandadapu** (odd-diffusivity tensor formalism)
 4. **Gilbert-Sanders + Marris-Giuggioli papers** (quick novelty/FPT audit;
    do not deep-read yet)
-5. **Chiral active in obstacle lattices, Nat Comm 2024** (skim for the
+5. **Ouvry-Polychronakos 2020 + Sarmiento 2025 + Batchelor-Henry 2002 +
+   Gilbert-Sanders 2010** (citation-shield skim; PDFs now present)
+6. **Larralde 1997** (citation-shield skim from DOI/abstract until PDF is
+   available)
+7. **Chiral active in obstacle lattices, Nat Comm 2024** (skim for the
    triangular-is-different evidence)
-6. **Sevilla** (continuum-limit sanity check, lower priority)
+8. **Sevilla** (continuum-limit sanity check, lower priority)
 
 Everything else (Phase 2, Phase 3, group context) stays in the folder as
 background.

@@ -2,9 +2,12 @@
 
 **Project**: Chiral run-and-tumble walker on the triangular lattice (single
 walker, transport + first-passage + edge modes).
-**Goal**: Reproduce the calculations of refs 42–44 of the TCRW paper on
-the triangular lattice, with the new physics that arises from 6-fold
-geometry. Write a paper.
+**Goal**: Build the first lattice chiral RTW with a six-state director, on
+the triangular lattice. Compute transport (including the odd-diffusivity
+tensor $D^{\rm odd}_{ij}$), first-passage statistics, and the OBC edge
+spectrum. Closest lattice prior art is Wójcik–Kalz 2026 (square, $C_4$,
+discrete-time coin-step); the chirality-rate mechanism is borrowed from
+Mallikarjun–Pal 2023 (continuum, 4-director). Write a paper.
 
 **Date**: 15 May 2026 · **Author**: P. Bisht (TIFR Hyderabad)
 **Companion** : the bug-fixed `triangular_jmvr_corrected.py` infrastructure
@@ -28,6 +31,52 @@ read-through:
 - Whitelam-Klymko-Mandal moved to Phase 2 reading; Phase 1 is single-walker
   only.
 
+**Revision 2 (19 May 2026, after follow-up with Kabir)** : positioning sharpened
+after verifying ref 44 directly from the authors' companion code.
+- **Mallikarjun–Pal 2023 (TCRW ref 44) is a continuum $\mathbb{R}^2$ model**
+  with a 4-state discrete director, *not* a square-lattice walker. Verified
+  from `papers/RMStatMech_companion_code/Chiral_RTP.ipynb`: position update
+  is `x += v*tau*cos(theta_state)` in continuous space, absorbing walls live
+  at continuum $x = \pm L$. Kabir was also unaware of this until today.
+- Consequence: refs 42–44 do *not* form a "square-lattice chiral RTW" trio.
+  Ref 42 (Hargus–Epstein–Mandadapu) is the abstract $D^{\rm odd}$ concept,
+  ref 43 (Sevilla) is continuum, ref 44 (M–P) is continuum-with-discrete-director.
+  The only true lattice prior art with chirality + odd diffusion is
+  **Wójcik–Kalz 2026 (square)**.
+- Re-framing: our paper is *not* "the triangular version of ref 44." It is
+  *the lattice analogue of Mallikarjun–Pal's continuum chirality mechanism,
+  the natural $C_6$ counterpart of Wójcik–Kalz, and the first lattice CRTP
+  with a six-state director.* See revised §1 below.
+- Practical consequence: the right sanity-check baseline before going to
+  triangular is **Wójcik–Kalz** (lattice, square), not Mallikarjun–Pal
+  (continuum). M–P's MFPT plot cannot serve as a lattice bit-match: the
+  two models only agree in the diffusive limit, not at finite $v$.
+
+**Revision 3 (19 May 2026 night, after careful Wójcik–Kalz read)** :
+Wójcik–Kalz is the right lattice reference, but it is **not** the same
+stochastic process as ours.
+- Wójcik–Kalz use a **discrete-time internal-degree-of-freedom walk**:
+  $|\rho(t+1)\rangle = U|\rho(t)\rangle$, with
+  $U = S(I\otimes C)$ and
+  $C_{\rm CRW}=(1-p)C_{\rm rand}+pC_{\rm chir}$.
+- Our model is a **continuous-time Poisson run-and-tumble process** with
+  rates $v,\gamma_+,\gamma_-,\gamma_r$. Therefore Wójcik–Kalz is a
+  structural/baseline paper, not a bit-match target for the same code.
+- Their square model gives
+  $D_{xx}=D_{yy}=\frac{a^2}{2\tau}\frac{1-p^2}{1+p^2}$ and
+  $D_{xy}=-D_{yx}=\frac{a^2}{2\tau}\frac{2p}{1+p^2}$, so
+  $D_{xy}/D_{xx}=2p/(1-p^2)$ diverges as $p\to1$. Our continuous-time
+  triangular model has a finite jump-noise floor in $D_{\rm even}$; for
+  $v=\gamma=1,\gamma_r=0,b=1$ it gives
+  $D_{\rm even}=1/2$, $D_{\rm odd}=\sqrt3/4$, and
+  $D_{\rm odd}/D_{\rm even}=\sqrt3/2$.
+- New framing: Wójcik–Kalz develop a **discrete-time topological coin-walk
+  picture on square**; we develop the **continuous-time chiral RTW picture
+  on triangular**. Complementary, not duplicate.
+- Action change: implement a minimal Wójcik–Kalz discrete-time reproducer
+  separately when needed. Keep `square_pal/square_chiral_rtw.py` as our
+  continuous-time $C_4$ analogue, not as a literal Wójcik–Kalz module.
+
 ---
 
 ## 1. Mission statement, in one paragraph
@@ -37,11 +86,21 @@ the JMVR-style triangular walker (translation chirality $\epsilon$).
 We now extend to the **rotation-chirality** variant: a chiral
 run-and-tumble walker on the triangular lattice where the director
 $m \in \{0,\ldots,5\}$ rotates clockwise and counter-clockwise at
-unequal rates, with deterministic translation in the current director.
-We compute spatial moments, velocity correlations / odd-diffusive response,
-first-passage properties, search-time optimisation, and the open-boundary
-spectrum (edge modes), and we ask what genuinely changes when the 4-direction
-square walker is replaced by a 6-direction triangular walker.
+unequal rates ($\gamma_+ \ne \gamma_-$), with optional reversal
+$\gamma_r$ and deterministic translation in the current director.
+This model has not been studied before: Mallikarjun–Pal 2023 used a
+related left/right/reversal chirality mechanism but in continuum
+$\mathbb{R}^2$ with only four director states, and Wójcik–Kalz 2026
+developed a different discrete-time coin-step chiral walk on the square
+($C_4$) lattice. We compute the symmetric and antisymmetric
+parts of the diffusion tensor ($D^{\rm sym}_{ij}$, $D^{\rm odd}_{ij}$),
+real-space propagators, first-passage statistics, search-time
+optimisation, and the open-boundary spectrum (edge modes). The headline
+$C_6$-only result is the closed form $D^{\rm odd}/D^{\rm even} = \sqrt 3/2$
+at $b=1, \gamma_r=0$, $v=\gamma=1$ — larger than the corresponding
+continuous-time $C_4$ analogue and qualitatively different from the
+diverging Wójcik–Kalz discrete-time ratio (verified to machine precision;
+see `triangular/verify_diffusion_tensor.py`).
 
 ## 2. The model, precisely
 
@@ -144,12 +203,12 @@ non-Hermitian whenever $\vec{k} \ne 0$.
 
 | # | Paper | Why | What to extract |
 |---|---|---|---|
-| 1 | Mallikarjun & Pal, Physica A 622, 128821 (2023), arXiv:2209.05912 | The template. Square version of exactly what we'll build on triangular. | Their observables (moments, MFPT, optimal-bias plot, looping); their derivation methods |
-| 2 | Hargus, Epstein, Mandadapu, PRL 127, 178001 (2021) | The "odd diffusivity" tensor and its meaning | The antisymmetric part of $D_{ij}$ as chirality signature |
-| 3 | Sevilla, PRE 94, 062120 (2016) | Continuum chiral active particle | Continuum-limit cross-check formulas |
-| 4 | Osat, Meyberg, Metson, Speck arXiv:2602.12020 (TCRW) | Already read for Track-B context; refs 42–44 are the chiral-walker prior art | Edge-mode protocol; how the topological spectrum is computed |
-| 5 | Wójcik & Kalz, arXiv:2602.09920 (2026) | Closest modern square-lattice "chiral random walk" / odd-diffusion paper | What they already claim about odd diffusion, edge currents, and topology; how our triangular model differs |
-| 6 | Gilbert & Sanders, PRE 80, 041121 (2009) | Persistent random walk / triangular Lorentz-gas near miss | How persistence and triangular geometry enter diffusion; useful citation to avoid overclaiming |
+| 1 | **Wójcik & Kalz, arXiv:2602.09920 (2026)** | **Closest lattice prior art, but discrete-time.** Square-lattice coin-step chiral random walk with odd diffusivity and edge modes. It is not our continuous-time RTW, but it sets the lattice/topology language | Their $D^{\rm odd}$ formula, edge-current/topological framing, fidelity-decay diagnostic, and their explicit call for other lattice geometries. Use as a structural benchmark, not a bit-match target |
+| 2 | Mallikarjun & Pal, Physica A 622, 128821 (2023), arXiv:2209.05912 | **The chirality mechanism reference.** Continuous space with four discrete orientations, *not* a square-lattice spatial model. Rate convention $\Gamma_\pm$ for left/right tumbling + $\Gamma_2$ reversal | Their rate convention; their MFPT-via-Laplace-transform technique (`CRTP.nb` in our `papers/RMStatMech_companion_code/`); their optimal-bias observable. Note: cannot serve as a lattice bit-match baseline |
+| 3 | Hargus, Epstein, Mandadapu, PRL 127, 178001 (2021) | Definition of the odd diffusivity tensor; this is what makes $D^{\rm odd}$ a publishable observable | The Green–Kubo / velocity-correlator definition; the chirality-signature framing |
+| 4 | Osat, Meyberg, Metson, Speck arXiv:2602.12020 (TCRW) | Square-lattice edge modes + topological band structure; provides the recipe we copy in Step 6 | Edge-mode protocol; OBC spectrum visualisation; the C_4 baseline figure templates |
+| 5 | Sevilla, PRE 94, 062120 (2016) | Continuum chiral active particle (no lattice) | Continuum-limit cross-check formulas; sanity check on small-$k$ expansion |
+| 6 | Gilbert & Sanders, PRE 80, 041121 (2009) | Persistent random walk / triangular Lorentz-gas near miss | How persistence and triangular geometry enter diffusion; useful citation to avoid overclaiming "first triangular" |
 | 7 | Marris, Sarvaharman & Giuggioli (2023); Marris & Giuggioli (2024) | Persistent/anti-persistent lattice walks and first passage in domains | FPT methods and boundary-domain results relevant to our MFPT section |
 | 8 | Oropesa, de Castro, Löwen & Liarte, arXiv:2602.04732 (2026) | Triangular-lattice RTP-adjacent active matter on networks | Distinguish their trail-mediated triangular RTP from our clean single-particle chiral RTW |
 | -- | Whitelam-Klymko-Mandal, arXiv:1709.03951 (2017) | *Phase 2 reading* — multi-walker hard-core lattice ABP | Hard-core lattice rules; MIPS observable (defer until Phase 1 done) |
@@ -158,18 +217,23 @@ non-Hermitian whenever $\vec{k} \ne 0$.
 `triangular/papers/`, including the dangerous near-miss papers and the
 Panagiotopoulos JCP 2005 lattice hard-sphere reference for Phase 3.
 
-**Read first**: read Mallikarjun-Pal twice — once for model + observables,
-once for derivation tricks. Then do a quick novelty audit of Wójcik-Kalz,
-Gilbert-Sanders, and the Marris/Giuggioli papers before writing the first
-paragraph of the Phase-1 paper.
+**Read first** (revised priority): read **Wójcik–Kalz** *thoroughly*. It is
+the closest lattice prior art and the paper our results will be most
+forcefully compared against, but remember it is a discrete-time coin walk.
+After that, read Mallikarjun–Pal for the
+chirality mechanism + the MFPT Laplace-transform technique (use their
+`CRTP.nb`). Hargus–Epstein–Mandadapu next for the $D^{\rm odd}$ definition.
+Then do a quick novelty audit of Gilbert–Sanders and Marris/Giuggioli
+before writing the first paragraph of the Phase-1 paper.
 
 **Priority-claim guardrail**: do not write "chiral random walk on triangular
 lattice has never been done" as a blanket statement. Papers exist with
 nearby titles and triangular persistent/chiral walks. The sharper claim is:
 we study the **active six-director rotation-chiral run-and-tumble walker on
-the triangular lattice**, and compute the transport, first-passage, and
-edge/localisation observables that refs 42-44 studied in square/continuum
-settings.
+the triangular lattice**, and compute the transport (including the odd
+diffusivity tensor), first-passage, and edge/localisation observables that
+Wójcik–Kalz studied on the square lattice and that Mallikarjun–Pal and
+Hargus–Epstein–Mandadapu studied in the continuum.
 
 Do not deep-read the hard-hexagon/equation-of-state papers during Phase 1.
 They motivate Phase 2/3, but the immediate deliverable is still the
@@ -275,9 +339,24 @@ coefficients as functions of $(b, \gamma, \gamma_r)$.
 
 - Write a separate Fortran KMC using the JMVR KMC as a template:
   deterministic translation, $\gamma_\pm$ rotation, optional reversal.
-- Run at the same parameters where Mallikarjun–Pal report results, so
-  we can cross-check in the achiral limit $b = 0$ that we recover the
-  isotropic CTRW propagator on triangular.
+- **Achiral sanity check ($b = 0$).** Verify $P(\vec n, t)$ is isotropic
+  ($\langle x^2 \rangle = \langle y^2 \rangle$, $\langle xy \rangle = 0$),
+  and that at $t \gg 1/\gamma$ the lattice propagator approaches a 2D
+  isotropic Gaussian with the analytic $D^{\rm sym}$ from Step 2. *Do not*
+  attempt to bit-match Mallikarjun–Pal's continuum $P(x,y,t)$: their
+  propagator is supported on $\mathbb{R}^2$, ours on the lattice; the two
+  only agree in the diffusive limit, not at finite $v$.
+- **Two square baselines, kept separate.**
+  1. Build a minimal **Wójcik–Kalz discrete-time** reproducer:
+     coin-step update $U=S(I\otimes C)$, reproduce their MSD formula
+     $D_0^p=\frac{a^2}{2\tau}\frac{1-p^2}{1+p^2}$ and odd tensor
+     $D_{xy}=\frac{a^2}{2\tau}\frac{2p}{1+p^2}$. This checks that we
+     understand the lattice/topology reference.
+  2. Build our own **continuous-time $C_4$ reduction** of the triangular
+     RTW. This lives in `square_pal/square_chiral_rtw.py` and is the true
+     apples-to-apples comparison for our triangular rates. It should match
+     our Green-Kubo/exact formulas, not Wójcik–Kalz's discrete-time
+     numbers exactly.
 - Run at $b \ne 0$: visualise the propagator at $t \sim 1/\gamma$ and
   $t \gg 1/\gamma$. Expect transient circulation / rotating anisotropy in
   the ballistic-to-diffusive crossover, but no permanent centre-of-mass drift
@@ -308,14 +387,19 @@ For fixed reversal rate $\gamma_r$ (and fixed $\gamma$), scan $b$ and
 find the value $b^*$ that **minimises** the MFPT averaged over a
 uniform initial distribution.
 
-- Replicate Mallikarjun–Pal's qualitative result (optimal bias exists)
-  on triangular.
-- **New question**: is $b^*$ larger or smaller on triangular than on
-  square at matched parameters? The expected answer is "different",
-  and *why* it's different becomes a paragraph of the paper.
+- Test whether the *qualitative phenomenon* Mallikarjun–Pal found in the
+  continuum (an optimal chirality minimises the search time) survives on
+  the triangular lattice. We are not claiming numerical agreement with
+  their values — different geometry — only that the qualitative
+  optimisation curve exists.
+- **New question**: is $b^*$ larger or smaller on the triangular lattice
+  than on the square lattice (from our own $C_4$ reduction, the same
+  one we benchmark against Wójcik–Kalz in Step 3)? The expected answer
+  is "different", and *why* it's different becomes a paragraph of the
+  paper.
 
-**Output**: $b^*(\gamma, \gamma_r)$ surface plot, plus the analogous
-square-lattice plot for comparison.
+**Output**: $b^*(\gamma, \gamma_r)$ surface plot for triangular, plus the
+analogous square ($C_4$) plot from our own code for comparison.
 
 ### Step 6 · Edge modes (OBC spectrum)
 
@@ -343,9 +427,15 @@ geometry, in the style of TCRW Fig.~3.
 - For each observable (zero drift check, $D^{\rm sym}_{ij}$,
   $D^{\rm odd}_{ij}$, MFPT, $b^*$, edge-mode count and localisation),
   record the qualitative + quantitative result.
-- Cross-reference: where does the triangular result agree with the
-  square Mallikarjun–Pal / Hargus-Epstein-Mandadapu / Sevilla results,
-  and where does it differ?
+- Cross-reference, in two tiers:
+  - *Lattice* (apples-to-apples): how does the triangular result compare
+    to **Wójcik–Kalz 2026 (square, discrete-time)** and to our own
+    continuous-time $C_4$ reduction at matched rates? This is where the
+    $C_6$ story has to be told.
+  - *Continuum* (limit-only): how does the diffusive-limit triangular
+    result compare to Sevilla and to the diffusive limit of Mallikarjun–Pal?
+    Hargus–Epstein–Mandadapu is the conceptual touchstone for $D^{\rm odd}$
+    but is not a numerical comparator.
 
 **Output**: a paper draft. Aim for the Physica A / PRE level (same
 journals as refs 42–44).
@@ -399,11 +489,16 @@ By the end of Phase 1, we have:
 
 ## 9. Risks and contingencies
 
-- **Triangular result is qualitatively identical to square.** Then the
-  paper becomes "robustness of chiral RTW results to lattice geometry"
-  — still publishable but less interesting. *Mitigation*: lean into the
-  120°-rotation channel which has no square analogue; that's where new
-  physics is most likely.
+- **Triangular result is only a mild extension of square-lattice ideas.**
+  Then the paper becomes "continuous-time chiral RTW and geometry
+  dependence of odd diffusion" — still publishable but less dramatic.
+  *Mitigation*: lean into the sharp comparison:
+  Wójcik–Kalz's discrete-time ratio diverges as $p\to1$, our
+  continuous-time triangular ratio is finite at the fully chiral point,
+  and our continuous-time $C_6$ value differs from the $C_4$ reduction.
+  Also keep the 120°-rotation channel as a possible Phase 1.5 extension;
+  it has no square analogue and may contain the genuinely new triangular
+  physics.
 - **MFPT solver is numerically unstable** (real-space generator is
   $6 L^2 \times 6 L^2$; inversion can be ill-conditioned). *Mitigation*:
   use sparse linear solver `scipy.sparse.linalg.spsolve`; check against
